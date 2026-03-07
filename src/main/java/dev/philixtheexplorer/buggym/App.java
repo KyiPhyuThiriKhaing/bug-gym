@@ -1,5 +1,6 @@
 package dev.philixtheexplorer.buggym;
 
+import dev.philixtheexplorer.buggym.application.AppController;
 import dev.philixtheexplorer.buggym.model.Category;
 import dev.philixtheexplorer.buggym.model.Question;
 import dev.philixtheexplorer.buggym.model.RunResult;
@@ -19,15 +20,21 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.SplitPane;
 import javafx.scene.image.Image;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.text.Font;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-import javafx.scene.text.Font;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Optional;
 
 /**
  * Bug Gym - A mini coding practice platform for Java beginners.
@@ -36,9 +43,9 @@ public class App extends Application {
 
     private static final double WINDOW_WIDTH = 1000;
     private static final double WINDOW_HEIGHT = 600;
-    private QuestionLoader questionLoader;
+
+    private AppController appController;
     private CodeRunner codeRunner;
-    private ProgressManager progressManager;
     private UpdateService updateService;
 
     private QuestionTreeView questionTree;
@@ -47,41 +54,36 @@ public class App extends Application {
     private ResultsPanel resultsPanel;
     private Label progressLabel;
 
-    private Question currentQuestion;
     private boolean darkMode = true;
-
     private boolean suppressPracticeAutoSwitch = false;
+
+    private MainWorkspacePane workspacePane;
+    private SplitPane mainContentSplit;
+    private StackPane contentStack;
+    private HomePageView homeContainer;
 
     @Override
     public void start(Stage stage) {
-        // Load custom fonts
         Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"), 14);
 
-        // Initialize services
-        questionLoader = new QuestionLoader();
+        QuestionLoader questionLoader = new QuestionLoader();
+        ProgressManager progressManager = new ProgressManager();
+        appController = new AppController(questionLoader, progressManager);
+
         codeRunner = new CodeRunner();
-        progressManager = new ProgressManager();
         updateService = new UpdateService();
 
-        // Load questions
         try {
-            questionLoader.loadQuestions();
-            // Load progress for each question
-            for (Question q : questionLoader.getQuestions()) {
-                progressManager.loadProgress(q);
-            }
+            appController.loadQuestionsAndProgress();
         } catch (IOException e) {
             showError("Failed to load questions", e.getMessage());
         }
 
-        // Create main layout
         BorderPane root = createMainLayout();
 
-        // Create scene with styling
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
         scene.getStylesheets().add(getClass().getResource("/styles/main.css").toExternalForm());
 
-        // Set up stage
         stage.setTitle("Bug Gym - Java Practice Platform");
         stage.getIcons().add(new Image(getClass().getResourceAsStream("/icons/bug-gym.png")));
         stage.setScene(scene);
@@ -89,17 +91,11 @@ public class App extends Application {
         stage.setMinHeight(600);
         stage.setMaximized(true);
 
-        // Handle close
-        stage.setOnCloseRequest(event -> {
-            codeRunner.shutdown();
-        });
+        stage.setOnCloseRequest(event -> codeRunner.shutdown());
 
         stage.show();
 
-        // Select first question if available
         selectFirstQuestion();
-
-        // Check for updates silently
         checkForUpdates(true);
     }
 
@@ -107,40 +103,37 @@ public class App extends Application {
         BorderPane root = new BorderPane();
         root.getStyleClass().add("root");
 
-        // Top area with menu bar
-        MenuBar menuBar = MainMenuBarFactory.create(questionLoader.getCategories(), darkMode,
-            new MainMenuBarFactory.Actions(
-                this::saveProgress,
-                Platform::exit,
-                this::clearCode,
-                this::resetToStarter,
-                this::toggleDarkMode,
-                this::showHomePage,
-                this::showPracticePage,
-                this::toggleSidebar,
-                this::increaseZoom,
-                this::decreaseZoom,
-                this::resetZoom,
-                this::runTests,
-                this::submitSolution,
-                this::openCategoryFromMenu,
-                this::showHint,
-                this::showKeyboardShortcuts,
-                () -> checkForUpdates(false),
-                this::showAbout
-            ));
+        MenuBar menuBar = MainMenuBarFactory.create(appController.getCategories(), darkMode,
+                new MainMenuBarFactory.Actions(
+                        this::saveProgress,
+                        Platform::exit,
+                        this::clearCode,
+                        this::resetToStarter,
+                        this::toggleDarkMode,
+                        this::showHomePage,
+                        this::showPracticePage,
+                        this::toggleSidebar,
+                        this::increaseZoom,
+                        this::decreaseZoom,
+                        this::resetZoom,
+                        this::runTests,
+                        this::submitSolution,
+                        this::openCategoryFromMenu,
+                        this::showHint,
+                        this::showKeyboardShortcuts,
+                        () -> checkForUpdates(false),
+                        this::showAbout));
         root.setTop(menuBar);
 
         workspacePane = new MainWorkspacePane(
-            questionLoader.getCategories(),
-            this::onQuestionSelected,
-            this::navigateQuestion,
-            this::runTests,
-            this::submitSolution,
-            this::clearCode,
-            this::resetToStarter,
-            this::showHint
-        );
+                appController.getCategories(),
+                this::onQuestionSelected,
+                this::navigateQuestion,
+                this::runTests,
+                this::submitSolution,
+                this::clearCode,
+                this::resetToStarter,
+                this::showHint);
 
         questionTree = workspacePane.getQuestionTree();
         codeEditor = workspacePane.getCodeEditor();
@@ -151,14 +144,13 @@ public class App extends Application {
         mainContentSplit = workspacePane;
         updateProgress();
 
-        homeContainer = new HomePageView(questionLoader.getCategories(), this::openCategoryFromHome);
+        homeContainer = new HomePageView(appController.getCategories(), this::openCategoryFromHome);
 
         contentStack = new StackPane();
         contentStack.getChildren().addAll(mainContentSplit, homeContainer);
         root.setCenter(contentStack);
 
         showHomePage();
-
         return root;
     }
 
@@ -169,32 +161,31 @@ public class App extends Application {
     }
 
     private void updateProgress() {
-        if (progressLabel == null || questionLoader == null)
+        if (progressLabel == null || appController == null) {
             return;
-        long totalQuestions = questionLoader.getQuestions().size();
-        long solvedQuestions = questionLoader.getQuestions().stream()
-                .filter(Question::isSolved).count();
-        progressLabel.setText("Progress: %d/%d solved".formatted(solvedQuestions, totalQuestions));
+        }
+
+        AppController.ProgressSnapshot snapshot = appController.getProgressSnapshot();
+        progressLabel.setText("Progress: %d/%d solved"
+                .formatted(snapshot.solvedQuestions(), snapshot.totalQuestions()));
 
         if (homeContainer != null) {
-            homeContainer.refreshCategories(questionLoader.getCategories());
+            homeContainer.refreshCategories(appController.getCategories());
         }
     }
 
     private void openCategoryFromHome(Category category) {
-        Question target = category.getQuestions().stream()
-                .filter(q -> !q.isSolved())
-                .findFirst()
-                .orElse(category.getQuestions().get(0));
-
+        Question target = appController.getFirstUnsolvedOrFirst(category);
         showPracticePage();
         questionTree.selectQuestion(target);
     }
 
     private void showHomePage() {
-        if (homeContainer == null || mainContentSplit == null)
+        if (homeContainer == null || mainContentSplit == null) {
             return;
-        homeContainer.refreshCategories(questionLoader.getCategories());
+        }
+
+        homeContainer.refreshCategories(appController.getCategories());
         homeContainer.setVisible(true);
         homeContainer.setManaged(true);
         mainContentSplit.setVisible(false);
@@ -202,8 +193,10 @@ public class App extends Application {
     }
 
     private void showPracticePage() {
-        if (homeContainer == null || mainContentSplit == null)
+        if (homeContainer == null || mainContentSplit == null) {
             return;
+        }
+
         homeContainer.setVisible(false);
         homeContainer.setManaged(false);
         mainContentSplit.setVisible(true);
@@ -229,42 +222,32 @@ public class App extends Application {
     }
 
     private void onQuestionSelected(Question question) {
-        if (question == null)
+        if (question == null) {
             return;
-
-        // Save current code before switching
-        if (currentQuestion != null) {
-            currentQuestion.setUserCode(codeEditor.getCode());
-            progressManager.saveProgress(currentQuestion);
         }
 
-        currentQuestion = question;
+        appController.persistCurrentCode(codeEditor.getCode());
+        appController.setCurrentQuestion(question);
 
         if (!suppressPracticeAutoSwitch) {
             showPracticePage();
         }
 
-        // Load question content into WebView
-        String html = questionLoader.getQuestionHtml(question, darkMode);
+        String html = appController.getQuestionHtml(question, darkMode);
         questionView.getEngine().loadContent(html);
 
-        // Load code (user code if exists, otherwise starter)
-        if (question.getUserCode() != null && !question.getUserCode().isEmpty()) {
-            codeEditor.setCode(question.getUserCode());
-        } else {
-            codeEditor.setCode(question.getStarterCode());
-        }
-
-        // Clear results
+        codeEditor.setCode(appController.getInitialCodeFor(question));
         resultsPanel.clear();
     }
 
     private void navigateQuestion(int direction) {
+        Question currentQuestion = appController.getCurrentQuestion();
         if (currentQuestion == null) {
             selectFirstQuestion();
             return;
         }
-        var questions = questionLoader.getQuestions();
+
+        var questions = appController.getQuestions();
         int idx = questions.indexOf(currentQuestion);
         int newIdx = idx + direction;
         if (newIdx >= 0 && newIdx < questions.size()) {
@@ -273,6 +256,7 @@ public class App extends Application {
     }
 
     private void executeCodeRun(boolean isSubmission) {
+        Question currentQuestion = appController.getCurrentQuestion();
         if (currentQuestion == null) {
             showError("No Question Selected", "Please select a question from the sidebar.");
             return;
@@ -285,7 +269,6 @@ public class App extends Application {
         }
 
         if (currentQuestion.getTestCases().isEmpty()) {
-            // Run without test cases (just run main)
             Task<RunResult> task = new Task<>() {
                 @Override
                 protected RunResult call() {
@@ -327,7 +310,7 @@ public class App extends Application {
             codeEditor.setEditable(true);
 
             if (isSubmission && result.allPassed()) {
-                handleSuccessfulSubmission(result);
+                handleSuccessfulSubmission();
             }
         });
 
@@ -339,21 +322,21 @@ public class App extends Application {
         new Thread(task).start();
     }
 
-    private void handleSuccessfulSubmission(RunResult result) {
-        currentQuestion.setSolved(true);
-        currentQuestion.setUserCode(codeEditor.getCode());
-        progressManager.saveProgress(currentQuestion);
+    private void handleSuccessfulSubmission() {
+        appController.markCurrentSolved(codeEditor.getCode());
+
+        Question currentQuestion = appController.getCurrentQuestion();
         questionTree.refreshQuestion(currentQuestion);
         updateProgress();
 
-        Alert alert = AppDialogs.createStyledAlert(getClass(), Alert.AlertType.INFORMATION, "Congratulations!",
-            "🎉 All tests passed!");
+        Alert alert = AppDialogs.createStyledAlert(getClass(), Alert.AlertType.INFORMATION,
+                "Congratulations!", "🎉 All tests passed!");
         alert.setContentText("Great job! You've successfully solved this question.");
 
         ButtonType nextQuestionBtn = new ButtonType("Next Question", ButtonBar.ButtonData.NEXT_FORWARD);
         ButtonType stayBtn = new ButtonType("Stay Here", ButtonBar.ButtonData.CANCEL_CLOSE);
 
-        Question nextQuestion = getNextQuestion(currentQuestion);
+        Question nextQuestion = appController.getNextQuestion();
         if (nextQuestion != null) {
             alert.getButtonTypes().setAll(nextQuestionBtn, stayBtn);
         } else {
@@ -374,21 +357,13 @@ public class App extends Application {
         executeCodeRun(true);
     }
 
-    private Question getNextQuestion(Question current) {
-        List<Question> allQuestions = questionLoader.getQuestions();
-        int index = allQuestions.indexOf(current);
-        if (index >= 0 && index < allQuestions.size() - 1) {
-            return allQuestions.get(index + 1);
-        }
-        return null;
-    }
-
     private void clearCode() {
         codeEditor.clear();
         resultsPanel.clear();
     }
 
     private void resetToStarter() {
+        Question currentQuestion = appController.getCurrentQuestion();
         if (currentQuestion != null) {
             codeEditor.setCode(currentQuestion.getStarterCode());
             resultsPanel.clear();
@@ -396,6 +371,7 @@ public class App extends Application {
     }
 
     private void showHint() {
+        Question currentQuestion = appController.getCurrentQuestion();
         if (currentQuestion != null) {
             resultsPanel.showHint(currentQuestion.getHint());
         }
@@ -403,7 +379,7 @@ public class App extends Application {
 
     private void toggleDarkMode(boolean dark) {
         this.darkMode = dark;
-        // The CSS handles dark/light mode through the root class
+
         Scene scene = codeEditor.getScene();
         if (scene != null) {
             if (dark) {
@@ -412,22 +388,19 @@ public class App extends Application {
                 scene.getRoot().getStyleClass().add("light-mode");
             }
         }
-        // Refresh question view with new theme
+
+        Question currentQuestion = appController.getCurrentQuestion();
         if (currentQuestion != null) {
-            String html = questionLoader.getQuestionHtml(currentQuestion, darkMode);
+            String html = appController.getQuestionHtml(currentQuestion, darkMode);
             questionView.getEngine().loadContent(html);
         }
     }
 
     private void selectFirstQuestion() {
-        var categories = questionLoader.getCategories();
+        Question first = appController.getFirstQuestion();
         suppressPracticeAutoSwitch = true;
-        for (var category : categories) {
-            if (!category.getQuestions().isEmpty()) {
-                Question first = category.getQuestions().get(0);
-                questionTree.selectQuestion(first);
-                break;
-            }
+        if (first != null) {
+            questionTree.selectQuestion(first);
         }
         suppressPracticeAutoSwitch = false;
     }
@@ -464,23 +437,30 @@ public class App extends Application {
                 return updateService.fetchLatestVersion();
             }
         };
+
         task.setOnSucceeded(e -> {
             String latest = task.getValue();
             String current = getAppVersion();
             if (latest == null) {
-                if (!silent)
+                if (!silent) {
                     showInfo("Update Check", "Could not retrieve version info.");
+                }
             } else if ("dev".equals(current) || updateService.compareVersions(current, latest) < 0) {
-                AppDialogs.showUpdateAvailable(getClass(), current, latest, url -> getHostServices().showDocument(url));
+                AppDialogs.showUpdateAvailable(getClass(), current, latest,
+                        url -> getHostServices().showDocument(url));
             } else {
-                if (!silent)
+                if (!silent) {
                     showInfo("Up to Date", "You are running the latest version (v" + current + ").");
+                }
             }
         });
+
         task.setOnFailed(e -> {
-            if (!silent)
+            if (!silent) {
                 showInfo("Update Check", "Could not check for updates.");
+            }
         });
+
         new Thread(task).start();
     }
 
@@ -493,16 +473,8 @@ public class App extends Application {
     }
 
     private void saveProgress() {
-        if (currentQuestion != null) {
-            currentQuestion.setUserCode(codeEditor.getCode());
-            progressManager.saveProgress(currentQuestion);
-        }
+        appController.persistCurrentCode(codeEditor.getCode());
     }
-
-    private MainWorkspacePane workspacePane;
-    private SplitPane mainContentSplit;
-    private StackPane contentStack;
-    private HomePageView homeContainer;
 
     private void toggleSidebar() {
         if (workspacePane == null) {
@@ -513,11 +485,12 @@ public class App extends Application {
 
     @Override
     public void stop() {
-        if (currentQuestion != null && codeEditor != null) {
-            currentQuestion.setUserCode(codeEditor.getCode());
-            progressManager.saveProgress(currentQuestion);
+        if (codeEditor != null && appController != null) {
+            appController.persistCurrentCode(codeEditor.getCode());
         }
-        codeRunner.shutdown();
+        if (codeRunner != null) {
+            codeRunner.shutdown();
+        }
     }
 
     public static void main(String[] args) {
