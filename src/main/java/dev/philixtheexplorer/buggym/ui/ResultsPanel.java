@@ -264,7 +264,6 @@ public class ResultsPanel extends VBox {
             String charStr;
             boolean isMatch = false;
             boolean isMissing = false;
-            boolean isExtra = false;
 
             if (i < expected.length() && i < actual.length()) {
                 char eChar = expected.charAt(i);
@@ -276,7 +275,6 @@ public class ResultsPanel extends VBox {
             } else if (i < actual.length()) {
                 // Extra chars in actual
                 charStr = String.valueOf(actual.charAt(i));
-                isExtra = true;
             } else {
                 // Missing chars (expected has more)
                 charStr = "[MISSING]"; // Placeholder

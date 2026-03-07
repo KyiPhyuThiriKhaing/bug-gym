@@ -216,12 +216,121 @@
 }
 
 /* ============================================
+   Home Page
+   ============================================ */
+.home-scroll {
+    -fx-background-color: transparent;
+    -fx-border-width: 0;
+}
+
+.home-scroll > .viewport {
+    -fx-background-color: -mm-bg-primary;
+}
+
+.home-page {
+    -fx-background-color: -mm-bg-primary;
+    -fx-alignment: top-center;
+}
+
+.home-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mm-text-primary;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
+.home-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: -mm-text-secondary;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
+.home-cards {
+    -fx-padding: 6px 0 0 0;
+    -fx-alignment: top-center;
+}
+
+.home-card {
+    -fx-background-color: -mm-bg-secondary;
+    -fx-border-color: -mm-border;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-pref-width: 300px;
+    -fx-spacing: 12px;
+    -fx-alignment: center-left;
+    -fx-cursor: hand;
+}
+
+.home-card:hover {
+    -fx-background-color: -mm-bg-tertiary;
+}
+
+.home-card-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -mm-text-primary;
+}
+
+.home-card-left {
+    -fx-alignment: center-left;
+    -fx-spacing: 8px;
+}
+
+.home-card-meta {
+    -fx-text-fill: -mm-success;
+    -fx-font-size: 12px;
+}
+
+.home-tags {
+    -fx-alignment: center-left;
+}
+
+.home-card-progress {
+    -fx-alignment: center;
+}
+
+.home-card-progress-track {
+    -fx-fill: transparent;
+    -fx-stroke: -mm-bg-tertiary;
+    -fx-stroke-width: 6;
+}
+
+.home-card-progress-fill {
+    -fx-fill: transparent;
+    -fx-stroke: -mm-success;
+    -fx-stroke-width: 6;
+    -fx-stroke-line-cap: round;
+}
+
+.home-card-progress-text {
+    -fx-text-fill: -mm-text-primary;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.home-tag {
+    -fx-background-color: -mm-bg-tertiary;
+    -fx-text-fill: -mm-accent;
+    -fx-padding: 3px 8px;
+    -fx-background-radius: 999px;
+    -fx-font-size: 11px;
+}
+
+.home-card-start {
+    -fx-min-width: 100px;
+}
+
+/* ============================================
    TreeView
    ============================================ */
 .question-tree {
     -fx-background-color: transparent;
     -fx-border-color: -mm-border;
     -fx-border-radius: 5px;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
 
 .question-tree .tree-cell {
@@ -235,8 +344,18 @@
     -fx-text-fill: white;
 }
 
-.question-tree .tree-cell:hover:filled: !selected {
+.question-tree:focused .tree-cell:selected {
+    -fx-background-color: -mm-accent;
+    -fx-text-fill: white;
+}
+
+.question-tree .tree-cell:hover:filled {
     -fx-background-color: -mm-bg-tertiary;
+}
+
+.question-tree .tree-cell:selected:hover {
+    -fx-background-color: -mm-accent;
+    -fx-text-fill: white;
 }
 
 .question-tree .tree-cell.category-cell {

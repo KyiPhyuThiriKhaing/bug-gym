@@ -1,19 +1,21 @@
 package dev.philixtheexplorer.buggym;
 
+import dev.philixtheexplorer.buggym.model.Category;
 import dev.philixtheexplorer.buggym.model.Question;
 import dev.philixtheexplorer.buggym.model.RunResult;
 import dev.philixtheexplorer.buggym.service.CodeRunner;
 import dev.philixtheexplorer.buggym.service.ProgressManager;
 import dev.philixtheexplorer.buggym.service.QuestionLoader;
 import dev.philixtheexplorer.buggym.ui.CodeEditor;
+import dev.philixtheexplorer.buggym.ui.HomePageView;
+import dev.philixtheexplorer.buggym.ui.MainMenuBarFactory;
+import dev.philixtheexplorer.buggym.ui.MainWorkspacePane;
 import dev.philixtheexplorer.buggym.ui.QuestionTreeView;
 import dev.philixtheexplorer.buggym.ui.ResultsPanel;
 
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
-import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -40,8 +42,6 @@ public class App extends Application {
 
     private static final double WINDOW_WIDTH = 1000;
     private static final double WINDOW_HEIGHT = 600;
-    private static final double SIDEBAR_WIDTH = 180;
-
     private QuestionLoader questionLoader;
     private CodeRunner codeRunner;
     private ProgressManager progressManager;
@@ -56,15 +56,13 @@ public class App extends Application {
     private boolean darkMode = true;
     private final HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
 
-    private Stage primaryStage;
-    private double lastDividerPosition = 0.5;
+    private boolean suppressPracticeAutoSwitch = false;
 
     @Override
     public void start(Stage stage) {
         // Load custom fonts
         Font.loadFont(getClass().getResourceAsStream("/fonts/JetBrainsMono-Regular.ttf"), 14);
 
-        this.primaryStage = stage;
         // Initialize services
         questionLoader = new QuestionLoader();
         codeRunner = new CodeRunner();
@@ -115,166 +113,64 @@ public class App extends Application {
         root.getStyleClass().add("root");
 
         // Top area with menu bar
-        MenuBar menuBar = createMenuBar();
+        MenuBar menuBar = MainMenuBarFactory.create(questionLoader.getCategories(), darkMode,
+            new MainMenuBarFactory.Actions(
+                this::saveProgress,
+                Platform::exit,
+                this::clearCode,
+                this::resetToStarter,
+                this::toggleDarkMode,
+                this::showHomePage,
+                this::showPracticePage,
+                this::toggleSidebar,
+                this::increaseZoom,
+                this::decreaseZoom,
+                this::resetZoom,
+                this::runTests,
+                this::submitSolution,
+                this::openCategoryFromMenu,
+                this::showHint,
+                this::showKeyboardShortcuts,
+                () -> checkForUpdates(false),
+                this::showAbout
+            ));
         root.setTop(menuBar);
 
-        // Left sidebar with question tree
-        sidebarContainer = createSidebar();
-        root.setLeft(sidebarContainer);
+        workspacePane = new MainWorkspacePane(
+            questionLoader.getCategories(),
+            this::onQuestionSelected,
+            this::navigateQuestion,
+            this::runTests,
+            this::submitSolution,
+            this::clearCode,
+            this::resetToStarter,
+            this::showHint
+        );
 
-        // Center area with split panes
-        root.setCenter(createCenterArea());
+        questionTree = workspacePane.getQuestionTree();
+        codeEditor = workspacePane.getCodeEditor();
+        questionView = workspacePane.getQuestionView();
+        resultsPanel = workspacePane.getResultsPanel();
+        progressLabel = workspacePane.getProgressLabel();
+
+        mainContentSplit = workspacePane;
+        updateProgress();
+
+        homeContainer = new HomePageView(questionLoader.getCategories(), this::openCategoryFromHome);
+
+        contentStack = new StackPane();
+        contentStack.getChildren().addAll(mainContentSplit, homeContainer);
+        root.setCenter(contentStack);
+
+        showHomePage();
 
         return root;
     }
 
-    private MenuBar createMenuBar() {
-        MenuBar menuBar = new MenuBar();
-        menuBar.getStyleClass().add("main-menu-bar");
-
-        // File Menu
-        Menu fileMenu = new Menu("File");
-        MenuItem saveItem = new MenuItem("Save Progress");
-        saveItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.S,
-                javafx.scene.input.KeyCombination.CONTROL_DOWN));
-        saveItem.setOnAction(e -> saveProgress());
-
-        MenuItem exitItem = new MenuItem("Exit");
-        exitItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.Q,
-                javafx.scene.input.KeyCombination.CONTROL_DOWN));
-        exitItem.setOnAction(e -> Platform.exit());
-
-        fileMenu.getItems().addAll(saveItem, new SeparatorMenuItem(), exitItem);
-
-        // Edit Menu
-        Menu editMenu = new Menu("Edit");
-        MenuItem clearCodeItem = new MenuItem("Clear Code");
-        clearCodeItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.L,
-                javafx.scene.input.KeyCombination.CONTROL_DOWN));
-        clearCodeItem.setOnAction(e -> clearCode());
-
-        MenuItem resetCodeItem = new MenuItem("Reset to Starter");
-        resetCodeItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.R,
-                javafx.scene.input.KeyCombination.CONTROL_DOWN));
-        resetCodeItem.setOnAction(e -> resetToStarter());
-
-        editMenu.getItems().addAll(clearCodeItem, resetCodeItem);
-
-        // View Menu
-        Menu viewMenu = new Menu("View");
-        CheckMenuItem darkModeItem = new CheckMenuItem("Dark Mode");
-        darkModeItem.setSelected(darkMode);
-        darkModeItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.D,
-                javafx.scene.input.KeyCombination.CONTROL_DOWN, javafx.scene.input.KeyCombination.SHIFT_DOWN));
-        darkModeItem.setOnAction(e -> toggleDarkMode(darkModeItem.isSelected()));
-
-        MenuItem toggleSidebarItem = new MenuItem("Toggle Sidebar");
-        toggleSidebarItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.B,
-                javafx.scene.input.KeyCombination.CONTROL_DOWN));
-        toggleSidebarItem.setOnAction(e -> toggleSidebar());
-
-        viewMenu.getItems().addAll(darkModeItem, new SeparatorMenuItem(), toggleSidebarItem);
-
-        viewMenu.getItems().add(new SeparatorMenuItem());
-
-        MenuItem zoomInItem = new MenuItem("Zoom In");
-        zoomInItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.EQUALS,
-                javafx.scene.input.KeyCombination.CONTROL_DOWN));
-        zoomInItem.setOnAction(e -> {
-            if (codeEditor != null)
-                codeEditor.increaseFontSize();
-        });
-
-        MenuItem zoomOutItem = new MenuItem("Zoom Out");
-        zoomOutItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.MINUS,
-                javafx.scene.input.KeyCombination.CONTROL_DOWN));
-        zoomOutItem.setOnAction(e -> {
-            if (codeEditor != null)
-                codeEditor.decreaseFontSize();
-        });
-
-        MenuItem resetZoomItem = new MenuItem("Reset Zoom");
-        resetZoomItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.DIGIT0,
-                javafx.scene.input.KeyCombination.CONTROL_DOWN));
-        resetZoomItem.setOnAction(e -> {
-            if (codeEditor != null)
-                codeEditor.resetFontSize();
-        });
-
-        viewMenu.getItems().addAll(zoomInItem, zoomOutItem, resetZoomItem);
-
-        // Run Menu
-        Menu runMenu = new Menu("Run");
-        MenuItem runTestsItem = new MenuItem("Run Tests");
-        runTestsItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.F5));
-        runTestsItem.setOnAction(e -> runTests());
-
-        MenuItem submitItem = new MenuItem("Submit Solution");
-        submitItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.ENTER,
-                javafx.scene.input.KeyCombination.CONTROL_DOWN));
-        submitItem.setOnAction(e -> submitSolution());
-
-        runMenu.getItems().addAll(runTestsItem, submitItem);
-
-        // Categories Menu
-        Menu categoriesMenu = new Menu("Categories");
-        for (var category : questionLoader.getCategories()) {
-            MenuItem catItem = new MenuItem(category.getDisplayName());
-            catItem.setOnAction(e -> {
-                if (!category.getQuestions().isEmpty()) {
-                    questionTree.selectQuestion(category.getQuestions().get(0));
-                }
-            });
-            categoriesMenu.getItems().add(catItem);
+    private void openCategoryFromMenu(Category category) {
+        if (!category.getQuestions().isEmpty()) {
+            questionTree.selectQuestion(category.getQuestions().get(0));
         }
-
-        // Help Menu
-        Menu helpMenu = new Menu("Help");
-        MenuItem showHintItem = new MenuItem("Show Hint");
-        showHintItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.H,
-                javafx.scene.input.KeyCombination.CONTROL_DOWN));
-        showHintItem.setOnAction(e -> showHint());
-
-        MenuItem keyboardShortcutsItem = new MenuItem("Keyboard Shortcuts");
-        keyboardShortcutsItem.setAccelerator(new javafx.scene.input.KeyCodeCombination(javafx.scene.input.KeyCode.K,
-                javafx.scene.input.KeyCombination.CONTROL_DOWN, javafx.scene.input.KeyCombination.SHIFT_DOWN));
-        keyboardShortcutsItem.setOnAction(e -> showKeyboardShortcuts());
-
-        MenuItem checkUpdatesItem = new MenuItem("Check for Updates...");
-        checkUpdatesItem.setOnAction(e -> checkForUpdates(false));
-
-        MenuItem aboutItem = new MenuItem("About BugGym");
-        aboutItem.setOnAction(e -> showAbout());
-
-        helpMenu.getItems().addAll(showHintItem, keyboardShortcutsItem, new SeparatorMenuItem(), checkUpdatesItem,
-                aboutItem);
-
-        menuBar.getMenus().addAll(fileMenu, editMenu, viewMenu, runMenu, categoriesMenu, helpMenu);
-        return menuBar;
-    }
-
-    private VBox createSidebar() {
-        VBox sidebar = new VBox(10);
-        sidebar.setPrefWidth(SIDEBAR_WIDTH);
-        sidebar.setPadding(new Insets(10));
-        sidebar.getStyleClass().add("sidebar");
-
-        Label sidebarTitle = new Label("📚 Questions");
-        sidebarTitle.getStyleClass().add("sidebar-title");
-
-        questionTree = new QuestionTreeView();
-        questionTree.setCategories(questionLoader.getCategories());
-        questionTree.setOnQuestionSelected(this::onQuestionSelected);
-        VBox.setVgrow(questionTree, Priority.ALWAYS);
-
-        // Progress label
-        progressLabel = new Label();
-        progressLabel.getStyleClass().add("progress-label");
-        updateProgress();
-
-        sidebar.getChildren().addAll(sidebarTitle, questionTree, progressLabel);
-
-        return sidebar;
     }
 
     private void updateProgress() {
@@ -284,147 +180,57 @@ public class App extends Application {
         long solvedQuestions = questionLoader.getQuestions().stream()
                 .filter(Question::isSolved).count();
         progressLabel.setText("Progress: %d/%d solved".formatted(solvedQuestions, totalQuestions));
+
+        if (homeContainer != null) {
+            homeContainer.refreshCategories(questionLoader.getCategories());
+        }
     }
 
-    private SplitPane createCenterArea() {
-        // Main split: Editor (Center) vs Info (Right)
-        SplitPane mainSplit = new SplitPane();
-        mainSplit.setOrientation(Orientation.HORIZONTAL);
-        mainSplit.setDividerPositions(0.5); // Equal split initially
+    private void openCategoryFromHome(Category category) {
+        Question target = category.getQuestions().stream()
+                .filter(q -> !q.isSolved())
+                .findFirst()
+                .orElse(category.getQuestions().get(0));
 
-        // --- Middle Column: Code Editor ---
-        VBox editorColumn = new VBox(10);
-        editorColumn.setPadding(new Insets(10));
-        editorColumn.getStyleClass().add("code-container");
-
-        Label editorLabel = new Label("💻 Your Solution:");
-        editorLabel.getStyleClass().add("section-label");
-
-        codeEditor = new CodeEditor();
-        VBox.setVgrow(codeEditor, Priority.ALWAYS);
-
-        // Button bar
-        HBox buttonBar = createButtonBar();
-
-        editorColumn.getChildren().addAll(editorLabel, codeEditor, buttonBar);
-
-        // --- Right Column: Question & Results ---
-        SplitPane rightColumn = new SplitPane();
-        rightColumn.setOrientation(Orientation.VERTICAL);
-        rightColumn.setDividerPositions(0.5);
-
-        // Top: Question
-        questionView = new WebView();
-        questionView.getStyleClass().add("question-view");
-
-        // Navigation bar
-        Button prevBtn = new Button("← Prev");
-        prevBtn.getStyleClass().add("action-button");
-        prevBtn.setOnAction(e -> navigateQuestion(-1));
-
-        Label questionNavLabel = new Label("📖 Question");
-        questionNavLabel.getStyleClass().add("section-label");
-
-        Button nextBtn = new Button("Next →");
-        nextBtn.getStyleClass().add("action-button");
-        nextBtn.setOnAction(e -> navigateQuestion(1));
-
-        Region navSpacer1 = new Region();
-        Region navSpacer2 = new Region();
-        HBox.setHgrow(navSpacer1, Priority.ALWAYS);
-        HBox.setHgrow(navSpacer2, Priority.ALWAYS);
-
-        HBox navBar = new HBox(10, prevBtn, navSpacer1, questionNavLabel, navSpacer2, nextBtn);
-        navBar.setAlignment(javafx.geometry.Pos.CENTER);
-        navBar.setPadding(new Insets(5, 10, 5, 10));
-
-        VBox questionContainer = new VBox(navBar, questionView);
-        questionContainer.getStyleClass().add("question-container");
-        VBox.setVgrow(questionView, Priority.ALWAYS);
-
-        // Bottom: Results
-        Label resultsLabel = new Label("📊 Results:");
-        resultsLabel.getStyleClass().add("section-label");
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        Button toggleBtn = new Button("▼");
-        toggleBtn.getStyleClass().add("small-button");
-        toggleBtn.setTooltip(new Tooltip("Minimize"));
-
-        HBox resultsHeader = new HBox(10, resultsLabel, spacer, toggleBtn);
-        resultsHeader.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-
-        resultsPanel = new ResultsPanel();
-        VBox.setVgrow(resultsPanel, Priority.ALWAYS);
-
-        VBox resultsBox = new VBox(5, resultsHeader, resultsPanel);
-        resultsBox.setPadding(new Insets(10));
-        VBox.setVgrow(resultsPanel, Priority.ALWAYS);
-        resultsBox.getStyleClass().add("results-box");
-
-        rightColumn.getItems().addAll(questionContainer, resultsBox);
-
-        toggleBtn.setOnAction(e -> {
-            boolean isExpanded = resultsPanel.isVisible();
-            if (isExpanded) {
-                // Collapse
-                if (rightColumn.getDividerPositions().length > 0) {
-                    lastDividerPosition = rightColumn.getDividerPositions()[0];
-                }
-                resultsPanel.setVisible(false);
-                resultsPanel.setManaged(false);
-                toggleBtn.setText("▲");
-                toggleBtn.setTooltip(new Tooltip("Expand"));
-                rightColumn.setDividerPositions(1.0);
-            } else {
-                // Expand
-                resultsPanel.setVisible(true);
-                resultsPanel.setManaged(true);
-                toggleBtn.setText("▼");
-                toggleBtn.setTooltip(new Tooltip("Minimize"));
-                rightColumn.setDividerPositions(lastDividerPosition);
-            }
-        });
-
-        // Assemble Main Split
-        mainSplit.getItems().addAll(editorColumn, rightColumn);
-
-        return mainSplit;
+        showPracticePage();
+        questionTree.selectQuestion(target);
     }
 
-    private HBox createButtonBar() {
-        HBox buttonBar = new HBox(10);
-        buttonBar.setPadding(new Insets(10, 0, 0, 0));
-        buttonBar.getStyleClass().add("button-bar");
+    private void showHomePage() {
+        if (homeContainer == null || mainContentSplit == null)
+            return;
+        homeContainer.refreshCategories(questionLoader.getCategories());
+        homeContainer.setVisible(true);
+        homeContainer.setManaged(true);
+        mainContentSplit.setVisible(false);
+        mainContentSplit.setManaged(false);
+    }
 
-        Button runButton = new Button("Run Tests");
-        runButton.getStyleClass().addAll("action-button", "run-button");
-        runButton.setOnAction(e -> runTests());
+    private void showPracticePage() {
+        if (homeContainer == null || mainContentSplit == null)
+            return;
+        homeContainer.setVisible(false);
+        homeContainer.setManaged(false);
+        mainContentSplit.setVisible(true);
+        mainContentSplit.setManaged(true);
+    }
 
-        Button submitButton = new Button("Submit");
-        submitButton.getStyleClass().addAll("action-button", "submit-button");
-        submitButton.setOnAction(e -> submitSolution());
+    private void increaseZoom() {
+        if (codeEditor != null) {
+            codeEditor.increaseFontSize();
+        }
+    }
 
-        Button clearButton = new Button("Clear");
-        clearButton.getStyleClass().add("action-button");
-        clearButton.setOnAction(e -> clearCode());
+    private void decreaseZoom() {
+        if (codeEditor != null) {
+            codeEditor.decreaseFontSize();
+        }
+    }
 
-        Button resetButton = new Button("Reset");
-        resetButton.getStyleClass().add("action-button");
-        resetButton.setOnAction(e -> resetToStarter());
-
-        Button hintButton = new Button("Hint");
-        hintButton.getStyleClass().add("action-button");
-        hintButton.setOnAction(e -> showHint());
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        buttonBar.getChildren().addAll(runButton, submitButton, spacer, clearButton, resetButton, hintButton);
-
-        return buttonBar;
+    private void resetZoom() {
+        if (codeEditor != null) {
+            codeEditor.resetFontSize();
+        }
     }
 
     private void onQuestionSelected(Question question) {
@@ -438,6 +244,10 @@ public class App extends Application {
         }
 
         currentQuestion = question;
+
+        if (!suppressPracticeAutoSwitch) {
+            showPracticePage();
+        }
 
         // Load question content into WebView
         String html = questionLoader.getQuestionHtml(question, darkMode);
@@ -631,6 +441,7 @@ public class App extends Application {
 
     private void selectFirstQuestion() {
         var categories = questionLoader.getCategories();
+        suppressPracticeAutoSwitch = true;
         for (var category : categories) {
             if (!category.getQuestions().isEmpty()) {
                 Question first = category.getQuestions().get(0);
@@ -638,6 +449,7 @@ public class App extends Application {
                 break;
             }
         }
+        suppressPracticeAutoSwitch = false;
     }
 
     private void showError(String title, String message) {
@@ -795,6 +607,8 @@ public class App extends Application {
 
                 View:
                 • Ctrl+Shift+D    Toggle Dark Mode
+                • Ctrl+1          Home
+                • Ctrl+2          Practice Workspace
                 • Ctrl+B          Toggle Sidebar
                 • Ctrl+=          Zoom In
                 • Ctrl+-          Zoom Out
@@ -818,15 +632,16 @@ public class App extends Application {
         }
     }
 
-    private VBox sidebarContainer;
-    private boolean sidebarVisible = true;
+    private MainWorkspacePane workspacePane;
+    private SplitPane mainContentSplit;
+    private StackPane contentStack;
+    private HomePageView homeContainer;
 
     private void toggleSidebar() {
-        if (sidebarContainer != null) {
-            sidebarVisible = !sidebarVisible;
-            sidebarContainer.setVisible(sidebarVisible);
-            sidebarContainer.setManaged(sidebarVisible);
+        if (workspacePane == null) {
+            return;
         }
+        workspacePane.toggleSidebar();
     }
 
     @Override

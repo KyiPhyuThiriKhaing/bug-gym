@@ -1,7 +1,7 @@
 module dev.philixtheexplorer.buggym {
     requires transitive javafx.controls;
     requires javafx.fxml;
-    requires javafx.web;
+    requires transitive javafx.web;
     requires javafx.graphics;
 
     requires org.commonmark;
