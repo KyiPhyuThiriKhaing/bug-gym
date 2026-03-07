@@ -1,6 +1,10 @@
 package dev.philixtheexplorer.buggym;
 
 import dev.philixtheexplorer.buggym.application.AppController;
+import dev.philixtheexplorer.buggym.application.AppVersionResolver;
+import dev.philixtheexplorer.buggym.application.BackgroundTaskRunner;
+import dev.philixtheexplorer.buggym.application.ExecutionUseCase;
+import dev.philixtheexplorer.buggym.application.UpdateCheckUseCase;
 import dev.philixtheexplorer.buggym.model.Category;
 import dev.philixtheexplorer.buggym.model.Question;
 import dev.philixtheexplorer.buggym.model.RunResult;
@@ -45,8 +49,11 @@ public class App extends Application {
     private static final double WINDOW_HEIGHT = 600;
 
     private AppController appController;
+    private BackgroundTaskRunner taskRunner;
     private CodeRunner codeRunner;
+    private ExecutionUseCase executionUseCase;
     private UpdateService updateService;
+    private UpdateCheckUseCase updateCheckUseCase;
 
     private QuestionTreeView questionTree;
     private WebView questionView;
@@ -69,9 +76,12 @@ public class App extends Application {
         QuestionLoader questionLoader = new QuestionLoader();
         ProgressManager progressManager = new ProgressManager();
         appController = new AppController(questionLoader, progressManager);
+        taskRunner = new BackgroundTaskRunner("buggym-app-bg", 2);
 
         codeRunner = new CodeRunner();
+        executionUseCase = new ExecutionUseCase(codeRunner);
         updateService = new UpdateService();
+        updateCheckUseCase = new UpdateCheckUseCase(updateService);
 
         try {
             appController.loadQuestionsAndProgress();
@@ -91,7 +101,14 @@ public class App extends Application {
         stage.setMinHeight(600);
         stage.setMaximized(true);
 
-        stage.setOnCloseRequest(event -> codeRunner.shutdown());
+        stage.setOnCloseRequest(event -> {
+            if (taskRunner != null) {
+                taskRunner.shutdownNow();
+            }
+            if (codeRunner != null) {
+                codeRunner.shutdown();
+            }
+        });
 
         stage.show();
 
@@ -268,41 +285,10 @@ public class App extends Application {
             return;
         }
 
-        if (currentQuestion.getTestCases().isEmpty()) {
-            Task<RunResult> task = new Task<>() {
-                @Override
-                protected RunResult call() {
-                    return codeRunner.runMain(code);
-                }
-            };
-
-            resultsPanel.showLoading();
-            codeEditor.setEditable(false);
-
-            task.setOnSucceeded(e -> {
-                RunResult result = task.getValue();
-                resultsPanel.showResults(result);
-                codeEditor.setEditable(true);
-            });
-
-            task.setOnFailed(e -> {
-                resultsPanel.showError("Execution failed: " + task.getException().getMessage());
-                codeEditor.setEditable(true);
-            });
-
-            new Thread(task).start();
-            return;
-        }
+        Task<RunResult> task = executionUseCase.createExecutionTask(currentQuestion, code);
 
         resultsPanel.showLoading();
         codeEditor.setEditable(false);
-
-        Task<RunResult> task = new Task<>() {
-            @Override
-            protected RunResult call() {
-                return codeRunner.runTests(code, currentQuestion.getTestCases());
-            }
-        };
 
         task.setOnSucceeded(e -> {
             RunResult result = task.getValue();
@@ -319,7 +305,7 @@ public class App extends Application {
             codeEditor.setEditable(true);
         });
 
-        new Thread(task).start();
+        taskRunner.run(task);
     }
 
     private void handleSuccessfulSubmission() {
@@ -410,48 +396,32 @@ public class App extends Application {
     }
 
     private void showAbout() {
-        String version = getAppVersion();
+        String version = AppVersionResolver.resolve(App.class);
         AppDialogs.showAbout(getClass(), version, url -> getHostServices().showDocument(url));
     }
 
-    private String getAppVersion() {
-        String fromManifest = App.class.getPackage() != null
-                ? App.class.getPackage().getImplementationVersion()
-                : null;
-        if (fromManifest != null && !fromManifest.isBlank()) {
-            return fromManifest;
-        }
-
-        String fromProperty = System.getProperty("app.version");
-        if (fromProperty != null && !fromProperty.isBlank()) {
-            return fromProperty;
-        }
-
-        return "dev";
-    }
-
     private void checkForUpdates(boolean silent) {
-        Task<String> task = new Task<>() {
-            @Override
-            protected String call() throws Exception {
-                return updateService.fetchLatestVersion();
-            }
-        };
+        String currentVersion = AppVersionResolver.resolve(App.class);
+        Task<UpdateCheckUseCase.UpdateCheckResult> task = updateCheckUseCase.createCheckTask(currentVersion);
 
         task.setOnSucceeded(e -> {
-            String latest = task.getValue();
-            String current = getAppVersion();
-            if (latest == null) {
+            UpdateCheckUseCase.UpdateCheckResult result = task.getValue();
+
+            if (result.status() == UpdateCheckUseCase.Status.VERSION_UNAVAILABLE) {
                 if (!silent) {
                     showInfo("Update Check", "Could not retrieve version info.");
                 }
-            } else if ("dev".equals(current) || updateService.compareVersions(current, latest) < 0) {
-                AppDialogs.showUpdateAvailable(getClass(), current, latest,
+                return;
+            }
+
+            if (result.status() == UpdateCheckUseCase.Status.UPDATE_AVAILABLE) {
+                AppDialogs.showUpdateAvailable(getClass(), result.currentVersion(), result.latestVersion(),
                         url -> getHostServices().showDocument(url));
-            } else {
-                if (!silent) {
-                    showInfo("Up to Date", "You are running the latest version (v" + current + ").");
-                }
+                return;
+            }
+
+            if (!silent) {
+                showInfo("Up to Date", "You are running the latest version (v" + result.currentVersion() + ").");
             }
         });
 
@@ -461,7 +431,7 @@ public class App extends Application {
             }
         });
 
-        new Thread(task).start();
+        taskRunner.run(task);
     }
 
     private void showInfo(String title, String message) {
@@ -487,6 +457,9 @@ public class App extends Application {
     public void stop() {
         if (codeEditor != null && appController != null) {
             appController.persistCurrentCode(codeEditor.getCode());
+        }
+        if (taskRunner != null) {
+            taskRunner.shutdownNow();
         }
         if (codeRunner != null) {
             codeRunner.shutdown();
