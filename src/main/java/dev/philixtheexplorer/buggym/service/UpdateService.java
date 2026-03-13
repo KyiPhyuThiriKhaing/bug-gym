@@ -21,7 +21,7 @@ public class UpdateService {
         this(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build());
     }
 
-    public UpdateService(HttpClient httpClient) {
+    UpdateService(HttpClient httpClient) {
         this.httpClient = httpClient;
     }
 
