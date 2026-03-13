@@ -3,12 +3,13 @@ package dev.philixtheexplorer.buggym;
 import dev.philixtheexplorer.buggym.application.AppController;
 import dev.philixtheexplorer.buggym.application.AppVersionResolver;
 import dev.philixtheexplorer.buggym.application.BackgroundTaskRunner;
+import dev.philixtheexplorer.buggym.application.CodeExecutionEngine;
 import dev.philixtheexplorer.buggym.application.ExecutionUseCase;
 import dev.philixtheexplorer.buggym.application.UpdateCheckUseCase;
 import dev.philixtheexplorer.buggym.model.Category;
 import dev.philixtheexplorer.buggym.model.Question;
 import dev.philixtheexplorer.buggym.model.RunResult;
-import dev.philixtheexplorer.buggym.service.CodeRunner;
+import dev.philixtheexplorer.buggym.service.InProcessCodeExecutionEngine;
 import dev.philixtheexplorer.buggym.service.ProgressManager;
 import dev.philixtheexplorer.buggym.service.QuestionLoader;
 import dev.philixtheexplorer.buggym.service.UpdateService;
@@ -19,6 +20,7 @@ import dev.philixtheexplorer.buggym.ui.MainMenuBarFactory;
 import dev.philixtheexplorer.buggym.ui.MainWorkspacePane;
 import dev.philixtheexplorer.buggym.ui.QuestionTreeView;
 import dev.philixtheexplorer.buggym.ui.ResultsPanel;
+import dev.philixtheexplorer.buggym.ui.WorkspaceUiCoordinator;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -50,10 +52,11 @@ public class App extends Application {
 
     private AppController appController;
     private BackgroundTaskRunner taskRunner;
-    private CodeRunner codeRunner;
+    private CodeExecutionEngine codeExecutionEngine;
     private ExecutionUseCase executionUseCase;
     private UpdateService updateService;
     private UpdateCheckUseCase updateCheckUseCase;
+    private WorkspaceUiCoordinator workspaceUiCoordinator;
 
     private QuestionTreeView questionTree;
     private WebView questionView;
@@ -78,10 +81,11 @@ public class App extends Application {
         appController = new AppController(questionLoader, progressManager);
         taskRunner = new BackgroundTaskRunner("buggym-app-bg", 2);
 
-        codeRunner = new CodeRunner();
-        executionUseCase = new ExecutionUseCase(codeRunner);
+        codeExecutionEngine = new InProcessCodeExecutionEngine();
+        executionUseCase = new ExecutionUseCase(codeExecutionEngine);
         updateService = new UpdateService();
         updateCheckUseCase = new UpdateCheckUseCase(updateService);
+        workspaceUiCoordinator = new WorkspaceUiCoordinator();
 
         try {
             appController.loadQuestionsAndProgress();
@@ -105,8 +109,8 @@ public class App extends Application {
             if (taskRunner != null) {
                 taskRunner.shutdownNow();
             }
-            if (codeRunner != null) {
-                codeRunner.shutdown();
+            if (codeExecutionEngine != null) {
+                codeExecutionEngine.shutdown();
             }
         });
 
@@ -183,11 +187,10 @@ public class App extends Application {
         }
 
         AppController.ProgressSnapshot snapshot = appController.getProgressSnapshot();
-        progressLabel.setText("Progress: %d/%d solved"
-                .formatted(snapshot.solvedQuestions(), snapshot.totalQuestions()));
+        workspaceUiCoordinator.updateProgressLabel(progressLabel, snapshot);
 
         if (homeContainer != null) {
-            homeContainer.refreshCategories(appController.getCategories());
+            workspaceUiCoordinator.refreshHomeCategories(homeContainer, appController.getCategories());
         }
     }
 
@@ -202,11 +205,7 @@ public class App extends Application {
             return;
         }
 
-        homeContainer.refreshCategories(appController.getCategories());
-        homeContainer.setVisible(true);
-        homeContainer.setManaged(true);
-        mainContentSplit.setVisible(false);
-        mainContentSplit.setManaged(false);
+        workspaceUiCoordinator.showHomePage(homeContainer, mainContentSplit, appController.getCategories());
     }
 
     private void showPracticePage() {
@@ -214,10 +213,7 @@ public class App extends Application {
             return;
         }
 
-        homeContainer.setVisible(false);
-        homeContainer.setManaged(false);
-        mainContentSplit.setVisible(true);
-        mainContentSplit.setManaged(true);
+        workspaceUiCoordinator.showPracticePage(homeContainer, mainContentSplit);
     }
 
     private void increaseZoom() {
@@ -368,11 +364,7 @@ public class App extends Application {
 
         Scene scene = codeEditor.getScene();
         if (scene != null) {
-            if (dark) {
-                scene.getRoot().getStyleClass().remove("light-mode");
-            } else {
-                scene.getRoot().getStyleClass().add("light-mode");
-            }
+            workspaceUiCoordinator.applyTheme(scene, dark);
         }
 
         Question currentQuestion = appController.getCurrentQuestion();
@@ -461,8 +453,8 @@ public class App extends Application {
         if (taskRunner != null) {
             taskRunner.shutdownNow();
         }
-        if (codeRunner != null) {
-            codeRunner.shutdown();
+        if (codeExecutionEngine != null) {
+            codeExecutionEngine.shutdown();
         }
     }
 

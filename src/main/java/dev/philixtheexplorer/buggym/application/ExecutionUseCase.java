@@ -2,7 +2,6 @@ package dev.philixtheexplorer.buggym.application;
 
 import dev.philixtheexplorer.buggym.model.Question;
 import dev.philixtheexplorer.buggym.model.RunResult;
-import dev.philixtheexplorer.buggym.service.CodeRunner;
 import javafx.concurrent.Task;
 
 /**
@@ -10,10 +9,10 @@ import javafx.concurrent.Task;
  */
 public class ExecutionUseCase {
 
-    private final CodeRunner codeRunner;
+    private final CodeExecutionEngine codeExecutionEngine;
 
-    public ExecutionUseCase(CodeRunner codeRunner) {
-        this.codeRunner = codeRunner;
+    public ExecutionUseCase(CodeExecutionEngine codeExecutionEngine) {
+        this.codeExecutionEngine = codeExecutionEngine;
     }
 
     public Task<RunResult> createExecutionTask(Question question, String code) {
@@ -21,7 +20,7 @@ public class ExecutionUseCase {
             return new Task<>() {
                 @Override
                 protected RunResult call() {
-                    return codeRunner.runMain(code);
+                    return codeExecutionEngine.runMain(code);
                 }
             };
         }
@@ -29,7 +28,7 @@ public class ExecutionUseCase {
         return new Task<>() {
             @Override
             protected RunResult call() {
-                return codeRunner.runTests(code, question.getTestCases());
+                return codeExecutionEngine.runTests(code, question.getTestCases());
             }
         };
     }
