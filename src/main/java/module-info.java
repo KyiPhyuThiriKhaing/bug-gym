@@ -1,15 +1,15 @@
 module dev.philixtheexplorer.buggym {
-    requires transitive javafx.controls;
+    requires javafx.controls;
     requires javafx.fxml;
-    requires transitive javafx.web;
-    requires javafx.graphics;
+    requires javafx.web;
+    requires transitive javafx.graphics;
 
     requires org.commonmark;
     requires org.commonmark.ext.gfm.tables;
 
-    requires transitive org.fxmisc.richtext;
-    requires transitive reactfx;
-    requires transitive org.fxmisc.flowless;
+    requires org.fxmisc.richtext;
+    requires reactfx;
+    requires org.fxmisc.flowless;
 
     requires java.compiler;
     requires java.net.http;
@@ -20,6 +20,4 @@ module dev.philixtheexplorer.buggym {
 
     exports dev.philixtheexplorer.buggym;
     exports dev.philixtheexplorer.buggym.model;
-    exports dev.philixtheexplorer.buggym.service;
-    exports dev.philixtheexplorer.buggym.ui;
 }
