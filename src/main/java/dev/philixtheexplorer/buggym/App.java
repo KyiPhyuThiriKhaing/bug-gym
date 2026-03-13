@@ -5,6 +5,7 @@ import dev.philixtheexplorer.buggym.application.AppVersionResolver;
 import dev.philixtheexplorer.buggym.application.BackgroundTaskRunner;
 import dev.philixtheexplorer.buggym.application.CodeExecutionEngine;
 import dev.philixtheexplorer.buggym.application.ExecutionUseCase;
+import dev.philixtheexplorer.buggym.application.SessionFlowCoordinator;
 import dev.philixtheexplorer.buggym.application.UpdateCheckUseCase;
 import dev.philixtheexplorer.buggym.model.Category;
 import dev.philixtheexplorer.buggym.model.Question;
@@ -52,6 +53,7 @@ public class App extends Application {
     private BackgroundTaskRunner taskRunner;
     private CodeExecutionEngine codeExecutionEngine;
     private ExecutionUseCase executionUseCase;
+    private SessionFlowCoordinator sessionFlowCoordinator;
     private UpdateService updateService;
     private UpdateCheckUseCase updateCheckUseCase;
     private WorkspaceUiCoordinator workspaceUiCoordinator;
@@ -83,6 +85,7 @@ public class App extends Application {
 
         codeExecutionEngine = new InProcessCodeExecutionEngine();
         executionUseCase = new ExecutionUseCase(codeExecutionEngine);
+        sessionFlowCoordinator = new SessionFlowCoordinator(appController);
         updateService = new UpdateService();
         updateCheckUseCase = new UpdateCheckUseCase(updateService);
         workspaceUiCoordinator = new WorkspaceUiCoordinator();
@@ -200,7 +203,7 @@ public class App extends Application {
     }
 
     private void openCategoryFromHome(Category category) {
-        Question target = appController.getFirstUnsolvedOrFirst(category);
+        Question target = sessionFlowCoordinator.resolveHomeTarget(category);
         showPracticePage();
         questionTree.selectQuestion(target);
     }
@@ -240,37 +243,27 @@ public class App extends Application {
     }
 
     private void onQuestionSelected(Question question) {
-        if (question == null) {
+        SessionFlowCoordinator.SelectionUpdate update = sessionFlowCoordinator.handleQuestionSelected(
+                question,
+                codeEditor.getCode(),
+                suppressPracticeAutoSwitch,
+                darkMode);
+
+        if (update == null) {
             return;
         }
 
-        appController.persistCurrentCode(codeEditor.getCode());
-        appController.setCurrentQuestion(question);
-
-        if (!suppressPracticeAutoSwitch) {
+        if (update.shouldShowPracticePage()) {
             showPracticePage();
         }
 
-        String html = appController.getQuestionHtml(question, darkMode);
-        questionView.getEngine().loadContent(html);
-
-        codeEditor.setCode(appController.getInitialCodeFor(question));
+        questionView.getEngine().loadContent(update.questionHtml());
+        codeEditor.setCode(update.codeToLoad());
         resultsPanel.clear();
     }
 
     private void navigateQuestion(int direction) {
-        Question currentQuestion = appController.getCurrentQuestion();
-        if (currentQuestion == null) {
-            selectFirstQuestion();
-            return;
-        }
-
-        var questions = appController.getQuestions();
-        int idx = questions.indexOf(currentQuestion);
-        int newIdx = idx + direction;
-        if (newIdx >= 0 && newIdx < questions.size()) {
-            questionTree.selectQuestion(questions.get(newIdx));
-        }
+        sessionFlowCoordinator.navigateQuestion(direction, this::selectFirstQuestion, questionTree::selectQuestion);
     }
 
     private void executeCodeRun(boolean isSubmission) {
@@ -367,7 +360,7 @@ public class App extends Application {
     }
 
     private void selectFirstQuestion() {
-        Question first = appController.getFirstQuestion();
+        Question first = sessionFlowCoordinator.getFirstQuestion();
         suppressPracticeAutoSwitch = true;
         if (first != null) {
             questionTree.selectQuestion(first);
@@ -418,7 +411,7 @@ public class App extends Application {
     }
 
     private void saveProgress() {
-        appController.persistCurrentCode(codeEditor.getCode());
+        sessionFlowCoordinator.persistCurrentCode(codeEditor.getCode());
     }
 
     private void toggleSidebar() {
@@ -431,7 +424,7 @@ public class App extends Application {
     @Override
     public void stop() {
         if (codeEditor != null && appController != null) {
-            appController.persistCurrentCode(codeEditor.getCode());
+            sessionFlowCoordinator.persistCurrentCode(codeEditor.getCode());
         }
         if (taskRunner != null) {
             taskRunner.shutdownNow();
