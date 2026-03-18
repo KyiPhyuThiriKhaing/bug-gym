@@ -109,6 +109,26 @@ public final class AppDialogs {
         alert.showAndWait();
     }
 
+    public static void showEditorDefaultsTip(Class<?> resourceOwner) {
+        Alert alert = createStyledAlert(
+                resourceOwner,
+                Alert.AlertType.INFORMATION,
+                "Editor Tips",
+                "jGRASP-style practice now has auto indent and auto bracket pairing enabled by default");
+
+        alert.setContentText("""
+                BugGym was originally designed for strict jGRASP-style exam practice
+                (no auto indent and no automatic bracket pairing).
+
+                Based on feedback, Auto Indent and Auto Bracket Pairing are now
+                enabled by default to make daily practice faster.
+
+                You can toggle both anytime in Settings from the menu bar.
+                """);
+        alert.getButtonTypes().setAll(ButtonType.OK);
+        alert.showAndWait();
+    }
+
     public static void showAbout(Class<?> resourceOwner, String version, Consumer<String> openUrl) {
         Alert alert = createStyledAlert(resourceOwner, Alert.AlertType.INFORMATION, "About BugGym",
                 "BugGym: Love, Java & Bugs");

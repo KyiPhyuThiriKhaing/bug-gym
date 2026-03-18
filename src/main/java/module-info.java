@@ -13,6 +13,7 @@ module dev.philixtheexplorer.buggym {
 
     requires java.compiler;
     requires java.net.http;
+    requires java.prefs;
 
     opens dev.philixtheexplorer.buggym to javafx.fxml;
     opens dev.philixtheexplorer.buggym.model to javafx.base;

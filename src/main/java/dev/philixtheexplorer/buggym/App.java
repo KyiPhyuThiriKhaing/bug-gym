@@ -26,6 +26,7 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.prefs.Preferences;
 
 /**
  * Bug Gym - A mini coding practice platform for Java beginners.
@@ -34,6 +35,8 @@ public class App extends Application {
 
     private static final double WINDOW_WIDTH = 1000;
     private static final double WINDOW_HEIGHT = 600;
+    private static final String PREF_KEY_EDITOR_DEFAULTS_TIP_SHOWN = "editorDefaultsTipShown";
+    private static final Preferences USER_PREFS = Preferences.userNodeForPackage(App.class);
 
     private AppBootstrap.BootstrapContext runtime;
 
@@ -69,9 +72,19 @@ public class App extends Application {
         runtime.stageConfigurator().configureMainStage(stage, scene, this::shutdownRuntime);
 
         stage.show();
+        showFirstLaunchEditorDefaultsTipIfNeeded();
 
         selectFirstQuestion();
         checkForUpdates(true);
+    }
+
+    private void showFirstLaunchEditorDefaultsTipIfNeeded() {
+        if (USER_PREFS.getBoolean(PREF_KEY_EDITOR_DEFAULTS_TIP_SHOWN, false)) {
+            return;
+        }
+
+        AppDialogs.showEditorDefaultsTip(getClass());
+        USER_PREFS.putBoolean(PREF_KEY_EDITOR_DEFAULTS_TIP_SHOWN, true);
     }
 
     private BorderPane createMainLayout() {
