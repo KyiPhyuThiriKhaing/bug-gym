@@ -66,6 +66,14 @@ public class AppController {
         progressManager.saveProgress(currentQuestion);
     }
 
+    public void resetCategoryProgress(Category category) {
+        for (Question question : category.getQuestions()) {
+            question.setSolved(false);
+            question.setUserCode(null);
+            progressManager.resetProgress(question);
+        }
+    }
+
     public String getQuestionHtml(Question question, boolean darkMode) {
         return questionLoader.getQuestionHtml(question, darkMode);
     }

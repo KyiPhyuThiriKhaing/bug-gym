@@ -1,6 +1,7 @@
 package dev.philixtheexplorer.buggym.ui;
 
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -9,6 +10,7 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -67,8 +69,16 @@ public final class AppDialogs {
         alert.showAndWait();
     }
 
+    public static boolean showConfirmation(Class<?> resourceOwner, String title, String header, String message) {
+        Alert alert = createStyledAlert(resourceOwner, Alert.AlertType.CONFIRMATION, title, header);
+        alert.setContentText(message);
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.OK;
+    }
+
     public static void showKeyboardShortcuts(Class<?> resourceOwner) {
-        Alert alert = createStyledAlert(resourceOwner, Alert.AlertType.INFORMATION, "Keyboard Shortcuts", "⌨ Keyboard Shortcuts");
+        Alert alert = createStyledAlert(resourceOwner, Alert.AlertType.INFORMATION, "Keyboard Shortcuts",
+                "⌨ Keyboard Shortcuts");
 
         alert.setContentText("""
                 File:
@@ -100,7 +110,8 @@ public final class AppDialogs {
     }
 
     public static void showAbout(Class<?> resourceOwner, String version, Consumer<String> openUrl) {
-        Alert alert = createStyledAlert(resourceOwner, Alert.AlertType.INFORMATION, "About BugGym", "BugGym: Love, Java & Bugs");
+        Alert alert = createStyledAlert(resourceOwner, Alert.AlertType.INFORMATION, "About BugGym",
+                "BugGym: Love, Java & Bugs");
 
         Text t1 = new Text("""
                 BugGym: A playground for Java beginners.
@@ -142,8 +153,7 @@ public final class AppDialogs {
             Class<?> resourceOwner,
             String currentVersion,
             String latestVersion,
-            Consumer<String> openUrl
-    ) {
+            Consumer<String> openUrl) {
         Alert alert = createStyledAlert(resourceOwner, Alert.AlertType.INFORMATION, "Update Available",
                 "A new version is available: v" + latestVersion);
 

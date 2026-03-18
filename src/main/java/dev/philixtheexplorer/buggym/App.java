@@ -95,7 +95,10 @@ public class App extends Application {
         mainContentSplit = workspacePane;
         updateProgress();
 
-        homeContainer = new HomePageView(runtime.appController().getCategories(), this::openCategoryFromHome);
+        homeContainer = new HomePageView(
+                runtime.appController().getCategories(),
+                this::openCategoryFromHome,
+                this::confirmAndResetCategory);
 
         contentStack = new StackPane();
         contentStack.getChildren().addAll(mainContentSplit, homeContainer);
@@ -157,6 +160,32 @@ public class App extends Application {
         Question target = runtime.sessionFlowCoordinator().resolveHomeTarget(category);
         showPracticePage();
         questionTree.selectQuestion(target);
+    }
+
+    private void confirmAndResetCategory(Category category) {
+        boolean confirmed = AppDialogs.showConfirmation(
+                getClass(),
+                "Reset Category",
+                "Reset all solutions in this category?",
+                "This will clear solved status and saved code for every question in "
+                        + category.getDisplayName() + ". This action cannot be undone.");
+
+        if (!confirmed) {
+            return;
+        }
+
+        runtime.appController().resetCategoryProgress(category);
+        for (Question question : category.getQuestions()) {
+            questionTree.refreshQuestion(question);
+        }
+
+        Question currentQuestion = runtime.appController().getCurrentQuestion();
+        if (currentQuestion != null && currentQuestion.getCategoryId().equals(category.getId())) {
+            codeEditor.setCode(currentQuestion.getStarterCode());
+            resultsPanel.clear();
+        }
+
+        updateProgress();
     }
 
     private void showHomePage() {

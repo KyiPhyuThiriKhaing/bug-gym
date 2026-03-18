@@ -21,7 +21,7 @@
     -mm-warning: #dcdcaa;
     -mm-border: #404040;
     -mm-text-on-accent: #1e1e1e;
-    
+
     /* Selection colors */
     -mm-selection-bg: #264f78;
     -mm-selection-fg: #ffffff;
@@ -40,7 +40,7 @@
     -mm-warning: #856404;
     -mm-border: #cccccc;
     -mm-text-on-accent: #ffffff;
-    
+
     /* Selection colors */
     -mm-selection-bg: #e0e0e0;
     -mm-selection-fg: #000000;
@@ -223,7 +223,7 @@
     -fx-border-width: 0;
 }
 
-.home-scroll > .viewport {
+.home-scroll>.viewport {
     -fx-background-color: -mm-bg-primary;
 }
 
@@ -260,7 +260,7 @@
     -fx-pref-width: 300px;
     -fx-spacing: 12px;
     -fx-alignment: center-left;
-    -fx-cursor: hand;
+    -fx-cursor: default;
 }
 
 .home-card:hover {
@@ -319,7 +319,17 @@
 }
 
 .home-card-start {
-    -fx-min-width: 100px;
+    -fx-padding: 8px 16px;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-color: -mm-accent;
+    -fx-border-color: -mm-accent;
+    -fx-text-fill: white;
+}
+
+.home-card-start:hover {
+    -fx-background-color: -mm-accent-hover;
+    -fx-border-color: -mm-accent-hover;
 }
 
 /* ============================================
@@ -667,6 +677,22 @@
     -fx-background-color: -mm-accent;
     -fx-text-fill: white;
     -fx-border-color: -mm-accent;
+}
+
+.small-button.home-card-reset {
+    -fx-padding: 8px 16px;
+    -fx-font-size: 13px;
+    -fx-background-color: transparent;
+    -fx-border-color: -mm-error;
+    -fx-border-width: 1px;
+    -fx-text-fill: -mm-error;
+    -fx-font-weight: bold;
+}
+
+.small-button.home-card-reset:hover {
+    -fx-background-color: rgba(241, 76, 76, 0.16);
+    -fx-border-color: -mm-error;
+    -fx-text-fill: -mm-error;
 }
 
 /* ============================================

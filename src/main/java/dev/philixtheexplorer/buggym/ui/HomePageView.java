@@ -29,9 +29,14 @@ public class HomePageView extends ScrollPane {
 
     private final TilePane cardsPane;
     private Consumer<Category> onCategorySelected;
+    private Consumer<Category> onCategoryResetRequested;
 
-    public HomePageView(Collection<Category> categories, Consumer<Category> onCategorySelected) {
+    public HomePageView(
+            Collection<Category> categories,
+            Consumer<Category> onCategorySelected,
+            Consumer<Category> onCategoryResetRequested) {
         this.onCategorySelected = onCategorySelected;
+        this.onCategoryResetRequested = onCategoryResetRequested;
 
         VBox homePage = new VBox(16);
         homePage.getStyleClass().add("home-page");
@@ -68,6 +73,10 @@ public class HomePageView extends ScrollPane {
 
     public void setOnCategorySelected(Consumer<Category> onCategorySelected) {
         this.onCategorySelected = onCategorySelected;
+    }
+
+    public void setOnCategoryResetRequested(Consumer<Category> onCategoryResetRequested) {
+        this.onCategoryResetRequested = onCategoryResetRequested;
     }
 
     public void refreshCategories(Collection<Category> categories) {
@@ -112,12 +121,22 @@ public class HomePageView extends ScrollPane {
             e.consume();
         });
 
-        leftColumn.getChildren().addAll(titleMetaBox, tagsPane, startButton);
+        Button resetButton = new Button("Reset");
+        resetButton.getStyleClass().add("small-button");
+        resetButton.getStyleClass().add("home-card-reset");
+        resetButton.setOnAction(e -> {
+            requestCategoryReset(category);
+            e.consume();
+        });
+
+        HBox actionsRow = new HBox(8, startButton, resetButton);
+        actionsRow.setAlignment(Pos.CENTER_LEFT);
+
+        leftColumn.getChildren().addAll(titleMetaBox, tagsPane, actionsRow);
 
         StackPane progressRing = createProgressRing(solved, total, progress);
 
         card.getChildren().addAll(leftColumn, progressRing);
-        card.setOnMouseClicked(e -> selectCategory(category));
         return card;
     }
 
@@ -148,6 +167,12 @@ public class HomePageView extends ScrollPane {
     private void selectCategory(Category category) {
         if (onCategorySelected != null) {
             onCategorySelected.accept(category);
+        }
+    }
+
+    private void requestCategoryReset(Category category) {
+        if (onCategoryResetRequested != null) {
+            onCategoryResetRequested.accept(category);
         }
     }
 

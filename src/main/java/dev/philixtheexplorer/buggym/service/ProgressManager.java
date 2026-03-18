@@ -76,4 +76,25 @@ public class ProgressManager {
             System.err.println("Failed to load progress for " + question.getId() + ": " + e.getMessage());
         }
     }
+
+    public void resetProgress(Question question) {
+        try {
+            Properties props = new Properties();
+            if (Files.exists(statusFile)) {
+                try (var reader = Files.newBufferedReader(statusFile)) {
+                    props.load(reader);
+                }
+            }
+
+            props.setProperty(question.getId(), "false");
+            try (var writer = Files.newBufferedWriter(statusFile)) {
+                props.store(writer, "BugGym Progress");
+            }
+
+            Path codeFile = saveDir.resolve(question.getId() + ".java");
+            Files.deleteIfExists(codeFile);
+        } catch (IOException e) {
+            System.err.println("Failed to reset progress for " + question.getId() + ": " + e.getMessage());
+        }
+    }
 }
