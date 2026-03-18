@@ -94,3 +94,87 @@ This repository contains a collection of beginner-friendly Java practice questio
 - [Question 7](06-arrays-2d/Question7.md): **Transpose Matrix** (Row/Col swap)
 - [Question 8](06-arrays-2d/Question8.md): **Identity Matrix Check** (Condition checking)
 - [Question 9](06-arrays-2d/Question9.md): **Symmetric Matrix Check** (Transpose compare)
+
+## 7. Methods Fundamentals
+*Learn to break problems into reusable functions while keeping logic simple.*
+
+- [Question 1](07-methods-basics/Question1.md): **Add with Method** (Define and call a function)
+- [Question 2](07-methods-basics/Question2.md): **Even/Odd with Method** (Boolean return logic)
+- [Question 3](07-methods-basics/Question3.md): **Max of Three** (Comparison in a method)
+- [Question 4](07-methods-basics/Question4.md): **Count Digits** (Loop logic inside method)
+- [Question 5](07-methods-basics/Question5.md): **Reverse Number** (Digit extraction in method)
+- [Question 6](07-methods-basics/Question6.md): **Sum Array** (Array traversal method)
+- [Question 7](07-methods-basics/Question7.md): **Contains Character** (String scan method)
+- [Question 8](07-methods-basics/Question8.md): **Celsius to Fahrenheit** (Formula method + formatting)
+
+## 8. Combined Basics (Bridge Set)
+*Small exam-style tasks that combine one or two essential concepts at a time.*
+
+- [Question 1](08-combined-basics/Question1.md): **Sign Counter** (Arrays + conditionals)
+- [Question 2](08-combined-basics/Question2.md): **Running Maximum** (Loop + state tracking)
+- [Question 3](08-combined-basics/Question3.md): **Character Index Map** (String + loop)
+- [Question 4](08-combined-basics/Question4.md): **Case-Insensitive Palindrome** (String + condition)
+- [Question 5](08-combined-basics/Question5.md): **Vowel Count in Sentence** (Character filtering)
+- [Question 6](08-combined-basics/Question6.md): **Second Largest Distinct** (Array scan + comparison)
+- [Question 7](08-combined-basics/Question7.md): **Anagram Check** (Frequency/ordering logic)
+- [Question 8](08-combined-basics/Question8.md): **Row Sum Printer** (2D arrays + loops)
+
+## 9. Exam I/O Basics
+*Focus on strict input/output formatting with beginner-safe logic.*
+
+- [Question 1](09-exam-io-basics/Question1.md): **Sort Three Numbers** (Conditionals + ordering)
+- [Question 2](09-exam-io-basics/Question2.md): **Star Triangle** (Loop + output pattern)
+- [Question 3](09-exam-io-basics/Question3.md): **Unique in Order** (Array scan + filtering)
+- [Question 4](09-exam-io-basics/Question4.md): **Longest Word** (String split + tracking)
+- [Question 5](09-exam-io-basics/Question5.md): **Rotation Check** (String logic)
+- [Question 6](09-exam-io-basics/Question6.md): **Most Frequent Value** (Counting + tie-break rule)
+- [Question 7](09-exam-io-basics/Question7.md): **Column Sums** (2D arrays + loops)
+- [Question 8](09-exam-io-basics/Question8.md): **Primes up to N** (Nested loop checks)
+
+## 10. Problem Solving Bridge
+*Short mixed problems that prepare students for tougher lab/quiz-style questions.*
+
+- [Question 1](10-problem-solving-bridge/Question1.md): **Balanced Halves** (Array + two accumulators)
+- [Question 2](10-problem-solving-bridge/Question2.md): **First Non-Repeating Char** (Frequency + scan)
+- [Question 3](10-problem-solving-bridge/Question3.md): **Longest Increasing Segment** (Contiguous logic)
+- [Question 4](10-problem-solving-bridge/Question4.md): **Checkerboard Pattern** (Nested loops + parity)
+- [Question 5](10-problem-solving-bridge/Question5.md): **Run-Length Encoding** (String compression)
+- [Question 6](10-problem-solving-bridge/Question6.md): **Row-Sum Magic Check** (Matrix validation)
+- [Question 7](10-problem-solving-bridge/Question7.md): **Rotate Array Right** (Index mapping)
+- [Question 8](10-problem-solving-bridge/Question8.md): **Prime Palindromes in Range** (Combined checks)
+
+## 11. Function & Testing Habits
+*Method-contract practice with starter templates to build implementation and verification habits.*
+
+- [Question 1](11-function-and-testing-habits/Question1.md): **addTwo Contract** (Return value correctness)
+- [Question 2](11-function-and-testing-habits/Question2.md): **clamp Contract** (Boundary behavior)
+- [Question 3](11-function-and-testing-habits/Question3.md): **countUppercase Contract** (Character filtering)
+- [Question 4](11-function-and-testing-habits/Question4.md): **average Contract** (Numeric accuracy + formatting)
+- [Question 5](11-function-and-testing-habits/Question5.md): **isStrictlyIncreasing Contract** (Array predicate)
+- [Question 6](11-function-and-testing-habits/Question6.md): **mainDiagonalSum Contract** (2D indexing)
+- [Question 7](11-function-and-testing-habits/Question7.md): **normalizeSpaces Contract** (String normalization)
+- [Question 8](11-function-and-testing-habits/Question8.md): **gradeFromScore Contract** (Branching rules)
+
+## 12. Mini Mock Set 1
+*Short mixed exam-style set for timed practice after completing the bridge modules.*
+
+- [Question 1](12-mini-mock-set-1/Question1.md): **Min Max Scanner** (Array traversal)
+- [Question 2](12-mini-mock-set-1/Question2.md): **Distinct Character Count** (Set/frequency thinking)
+- [Question 3](12-mini-mock-set-1/Question3.md): **Perfect Square Check** (Math + conditions)
+- [Question 4](12-mini-mock-set-1/Question4.md): **Odd-Length Words** (String split + filtering)
+- [Question 5](12-mini-mock-set-1/Question5.md): **Row Non-Decreasing Check** (2D validation)
+- [Question 6](12-mini-mock-set-1/Question6.md): **Most Frequent with Tie Rule** (Frequency + comparator)
+- [Question 7](12-mini-mock-set-1/Question7.md): **Even Digit Sum Range** (Range loop + digit math)
+- [Question 8](12-mini-mock-set-1/Question8.md): **Longest Palindromic Prefix** (String matching)
+
+## 13. Mini Mock Set 2
+*A slightly harder mixed set with stronger tie rules, indexing, and matrix/array reasoning.*
+
+- [Question 1](13-mini-mock-set-2/Question1.md): **Longest Non-Decreasing Segment** (Contiguous window + tie handling)
+- [Question 2](13-mini-mock-set-2/Question2.md): **Longest Common Prefix Length** (String scan)
+- [Question 3](13-mini-mock-set-2/Question3.md): **Array Leaders** (Right-side maximum logic)
+- [Question 4](13-mini-mock-set-2/Question4.md): **Most Frequent Word** (Case-insensitive frequency + lexical tie-break)
+- [Question 5](13-mini-mock-set-2/Question5.md): **First Saddle Point** (2D row/column constraints)
+- [Question 6](13-mini-mock-set-2/Question6.md): **Armstrong Range** (Digit math + powers)
+- [Question 7](13-mini-mock-set-2/Question7.md): **Min Swaps for Grouping** (Sliding-window style counting)
+- [Question 8](13-mini-mock-set-2/Question8.md): **Balanced Distinct Split** (Prefix/suffix distinct tracking)
