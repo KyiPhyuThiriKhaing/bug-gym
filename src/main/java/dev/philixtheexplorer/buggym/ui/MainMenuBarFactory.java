@@ -1,7 +1,6 @@
 package dev.philixtheexplorer.buggym.ui;
 
 import dev.philixtheexplorer.buggym.model.Category;
-import javafx.application.Platform;
 import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -133,12 +132,6 @@ public final class MainMenuBarFactory {
                         categoriesMenu.getItems().add(catItem);
                 }
 
-                Menu quickHomeMenu = new Menu("Home");
-                quickHomeMenu.setOnShowing(e -> {
-                        actions.onShowHome().run();
-                        Platform.runLater(quickHomeMenu::hide);
-                });
-
                 Menu helpMenu = new Menu("Help");
                 MenuItem showHintItem = new MenuItem("Show Hint");
                 showHintItem.setAccelerator(new KeyCodeCombination(KeyCode.H, KeyCombination.CONTROL_DOWN));
@@ -161,7 +154,6 @@ public final class MainMenuBarFactory {
                                 aboutItem);
 
                 menuBar.getMenus().addAll(fileMenu, editMenu, viewMenu, settingsMenu, runMenu, categoriesMenu,
-                                quickHomeMenu,
                                 helpMenu);
                 return menuBar;
         }
