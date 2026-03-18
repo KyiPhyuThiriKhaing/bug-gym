@@ -16,8 +16,7 @@ public class SubmissionFeedbackCoordinator {
     public void showSuccessDialogAndHandleNext(
             Class<?> resourceOwner,
             Question nextQuestion,
-            Consumer<Question> onNextQuestion
-    ) {
+            Consumer<Question> onNextQuestion) {
         Alert alert = AppDialogs.createStyledAlert(resourceOwner, Alert.AlertType.INFORMATION,
                 "Congratulations!", "🎉 All tests passed!");
         alert.setContentText("Great job! You've successfully solved this question.");

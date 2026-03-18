@@ -9,8 +9,7 @@ public class UpdateFeedbackCoordinator {
 
     public void showVersionUnavailable(
             Class<?> resourceOwner,
-            boolean silent
-    ) {
+            boolean silent) {
         if (!silent) {
             AppDialogs.showInfo(resourceOwner, "Update Check", "Could not retrieve version info.");
         }
@@ -20,8 +19,7 @@ public class UpdateFeedbackCoordinator {
             Class<?> resourceOwner,
             String currentVersion,
             String latestVersion,
-            Consumer<String> openUrl
-    ) {
+            Consumer<String> openUrl) {
         AppDialogs.showUpdateAvailable(resourceOwner, currentVersion, latestVersion, openUrl);
     }
 

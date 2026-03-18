@@ -246,7 +246,7 @@ public class QuestionLoader {
             // Use getResourceAsStream to ensure compatibility with JAR packaging
             String relativePath = root.relativize(path).toString().replace("\\", "/");
             String resourcePath = QUESTIONS_PATH + "/" + relativePath;
-            
+
             try (java.io.InputStream is = getClass().getResourceAsStream(resourcePath)) {
                 if (is != null) {
                     content = new String(is.readAllBytes(), StandardCharsets.UTF_8);

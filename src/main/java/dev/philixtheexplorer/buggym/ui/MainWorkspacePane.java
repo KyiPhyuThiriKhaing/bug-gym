@@ -42,8 +42,7 @@ public class MainWorkspacePane extends SplitPane {
             Runnable onSubmit,
             Runnable onClear,
             Runnable onReset,
-            Runnable onHint
-    ) {
+            Runnable onHint) {
         setOrientation(Orientation.HORIZONTAL);
 
         sidebarContainer = new VBox(10);
@@ -77,8 +76,7 @@ public class MainWorkspacePane extends SplitPane {
             Runnable onSubmit,
             Runnable onClear,
             Runnable onReset,
-            Runnable onHint
-    ) {
+            Runnable onHint) {
         SplitPane mainSplit = new SplitPane();
         mainSplit.setOrientation(Orientation.HORIZONTAL);
         mainSplit.setDividerPositions(0.5);
@@ -150,7 +148,7 @@ public class MainWorkspacePane extends SplitPane {
 
         rightColumn.getItems().addAll(questionContainer, resultsBox);
 
-        final double[] lastDividerPosition = {0.5};
+        final double[] lastDividerPosition = { 0.5 };
         toggleBtn.setOnAction(e -> {
             boolean isExpanded = resultsPanel.isVisible();
             if (isExpanded) {
@@ -180,8 +178,7 @@ public class MainWorkspacePane extends SplitPane {
             Runnable onSubmit,
             Runnable onClear,
             Runnable onReset,
-            Runnable onHint
-    ) {
+            Runnable onHint) {
         HBox buttonBar = new HBox(10);
         buttonBar.setPadding(new Insets(10, 0, 0, 0));
         buttonBar.getStyleClass().add("button-bar");

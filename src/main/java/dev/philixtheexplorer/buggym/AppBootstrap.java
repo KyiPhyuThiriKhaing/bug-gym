@@ -65,8 +65,7 @@ public class AppBootstrap {
             WorkspaceUiCoordinator workspaceUiCoordinator,
             StageConfigurator stageConfigurator,
             SubmissionFeedbackCoordinator submissionFeedbackCoordinator,
-            UpdateFeedbackCoordinator updateFeedbackCoordinator
-    ) {
+            UpdateFeedbackCoordinator updateFeedbackCoordinator) {
         public void shutdownRuntime() {
             taskRunner.shutdownNow();
             codeExecutionEngine.shutdown();

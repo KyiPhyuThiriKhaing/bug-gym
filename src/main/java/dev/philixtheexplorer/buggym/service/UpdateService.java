@@ -12,8 +12,7 @@ import java.time.Duration;
  */
 public class UpdateService {
 
-    private static final String LATEST_RELEASE_API =
-            "https://api.github.com/repos/PhilixTheExplorer/bug-gym/releases/latest";
+    private static final String LATEST_RELEASE_API = "https://api.github.com/repos/PhilixTheExplorer/bug-gym/releases/latest";
 
     private final HttpClient httpClient;
 

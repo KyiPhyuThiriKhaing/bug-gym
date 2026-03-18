@@ -21,8 +21,7 @@ public class SessionFlowCoordinator {
             Question question,
             String editorCode,
             boolean suppressPracticeAutoSwitch,
-            boolean darkMode
-    ) {
+            boolean darkMode) {
         if (question == null) {
             return null;
         }
@@ -39,8 +38,7 @@ public class SessionFlowCoordinator {
     public void navigateQuestion(
             int direction,
             Runnable selectFirstQuestion,
-            Consumer<Question> selectQuestion
-    ) {
+            Consumer<Question> selectQuestion) {
         Question currentQuestion = appController.getCurrentQuestion();
         if (currentQuestion == null) {
             selectFirstQuestion.run();
