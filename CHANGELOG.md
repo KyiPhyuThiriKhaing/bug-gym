@@ -5,6 +5,30 @@ All notable changes to BugGym will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-03-19
+
+### Added
+- Home-focused landing experience (`HomePageView`) with clearer navigation into practice workflow.
+- Auto Indent and Auto Bracket Pairing support in the code editor.
+- Category reset action with confirmation dialog.
+- First-launch tip dialog explaining the new editor defaults and where to toggle them.
+- Major expansion of practice content (`practice/07` to `practice/13` sets, plus updated practice README).
+- New documentation set: `FEATURES.md` and `ARCHITECTURE.md`.
+- Expanded `CONTRIBUTING.md` with detailed contributor workflow and VS Code guidance.
+
+### Changed
+- Editor defaults now enable Auto Indent and Auto Bracket Pairing by default, while remaining toggleable in Settings.
+- Improved application structure and coordination flow for more maintainable behavior across navigation, submission feedback, and update checks.
+- Improved execution and background task handling for more reliable run/test workflows.
+- Refined startup flow and shared UI service organization.
+- Improved editor and UI polish (including line number styling/alignment and related CSS updates).
+- Reworked `README.md` for clearer product overview, stronger project story, and streamlined feature snapshot.
+- Updated module dependencies to include Java Preferences support (`java.prefs`) and related module cleanup.
+- Updated `pom.xml` project version to `1.1.0`.
+
+### Fixed
+- Improved output normalization and related result rendering consistency in test feedback paths.
+
 ## [1.0.1] - 2026-02-06
 
 ### Added
