@@ -11,7 +11,6 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 
 /**
  * Panel for displaying test results.
@@ -191,7 +190,7 @@ public class ResultsPanel extends VBox {
         dialog.initModality(Modality.WINDOW_MODAL);
         dialog.initOwner(startStage);
         dialog.setTitle("Difference Check");
-        dialog.getIcons().add(new Image(getClass().getResourceAsStream("/icons/bug-gym.png")));
+        AppDialogs.applyAppIcon(dialog, getClass());
 
         VBox root = new VBox(15);
         root.setPadding(new Insets(20));

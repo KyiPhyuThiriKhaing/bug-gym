@@ -8,12 +8,15 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
+import java.io.InputStream;
 import java.util.function.Consumer;
 
 /**
  * Common dialog builders and preconfigured app dialogs.
  */
 public final class AppDialogs {
+
+    private static final String APP_ICON_PATH = "/icons/bug-gym.png";
 
     private AppDialogs() {
     }
@@ -23,15 +26,33 @@ public final class AppDialogs {
         alert.setTitle(title);
         alert.setHeaderText(header);
 
-        ImageView icon = new ImageView(new Image(resourceOwner.getResourceAsStream("/icons/bug-gym.png")));
-        icon.setFitHeight(48);
-        icon.setFitWidth(48);
-        alert.setGraphic(icon);
+        Image iconImage = loadAppIcon(resourceOwner);
+        if (iconImage != null) {
+            ImageView icon = new ImageView(iconImage);
+            icon.setFitHeight(48);
+            icon.setFitWidth(48);
+            alert.setGraphic(icon);
+        }
 
         Stage stage = (Stage) alert.getDialogPane().getScene().getWindow();
-        stage.getIcons().add(new Image(resourceOwner.getResourceAsStream("/icons/bug-gym.png")));
+        applyAppIcon(stage, resourceOwner);
 
         return alert;
+    }
+
+    public static void applyAppIcon(Stage stage, Class<?> resourceOwner) {
+        Image icon = loadAppIcon(resourceOwner);
+        if (icon != null) {
+            stage.getIcons().add(icon);
+        }
+    }
+
+    private static Image loadAppIcon(Class<?> resourceOwner) {
+        InputStream iconStream = resourceOwner.getResourceAsStream(APP_ICON_PATH);
+        if (iconStream == null) {
+            return null;
+        }
+        return new Image(iconStream);
     }
 
     public static void showInfo(Class<?> resourceOwner, String title, String message) {

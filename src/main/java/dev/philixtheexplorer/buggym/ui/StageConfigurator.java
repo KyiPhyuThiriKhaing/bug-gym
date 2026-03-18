@@ -1,7 +1,6 @@
 package dev.philixtheexplorer.buggym.ui;
 
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 /**
@@ -11,7 +10,7 @@ public class StageConfigurator {
 
     public void configureMainStage(Stage stage, Scene scene, Runnable onClose) {
         stage.setTitle("Bug Gym - Java Practice Platform");
-        stage.getIcons().add(new Image(getClass().getResourceAsStream("/icons/bug-gym.png")));
+        AppDialogs.applyAppIcon(stage, getClass());
         stage.setScene(scene);
         stage.setMinWidth(800);
         stage.setMinHeight(600);
