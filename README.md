@@ -31,6 +31,10 @@ At university (specifically KMUTT's SIT), students often take programming exams 
 
 ![Bug Gym Main Screen](screenshots/main-screen.png)
 
+## Demo
+
+https://github.com/user-attachments/assets/78edf914-20f0-4d4b-8f07-28fa65ecb655
+
 ## Overview
 
 Bug Gym runs purely locally on **Windows, macOS, and Linux**. No accounts, no internet, no cloud dependencies—just focused learning.
