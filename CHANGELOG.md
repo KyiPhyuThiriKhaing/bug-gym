@@ -5,6 +5,24 @@ All notable changes to BugGym will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-03-19
+
+### Added
+- New structured OOP practice track under `practice/14-oop-progression` with gradual concept progression.
+- New OOP core-concepts track under `practice/15-oop-core-concepts` focused on encapsulation, overloading, static/final, abstract classes, interfaces, overriding, and ArrayList-based collaboration.
+- Matching solution sets for new practice tracks (`Solution1` to `Solution8` where applicable).
+- Additional OOP questions emphasizing ArrayList add/remove flows, composition, and aggregation patterns.
+
+### Changed
+- Starter-code extraction strategy standardized around explicit `### Starter Code` sections.
+- OOP starter templates in new practice sets simplified to minimal driver/tester-first scaffolding for stronger learner implementation practice.
+- Updated `practice/README.md` index to include new OOP modules and question links.
+- Updated `pom.xml` project version to `1.2.0`.
+
+### Fixed
+- Dynamic code compilation now detects and loads the primary class name instead of forcing class renaming, preventing `cannot find symbol` errors for self-referencing driver classes (for example, `Tester t = new Tester();`).
+- Improved markdown question formatting consistency across multiple files (including input/result table normalization and starter-code blocks).
+
 ## [1.1.0] - 2026-03-19
 
 ### Added
