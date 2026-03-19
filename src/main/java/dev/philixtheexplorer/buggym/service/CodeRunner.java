@@ -117,15 +117,16 @@ public class CodeRunner {
                     "Java compiler not available. Make sure you're running with a JDK, not a JRE.");
         }
 
-        // Ensure the code has the correct class name
-        code = ensureClassName(code);
+        // Detect the primary class so we compile/load without rewriting source
+        // identifiers.
+        String primaryClassName = detectPrimaryClassName(code);
 
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
         try (InMemoryFileManager fileManager = new InMemoryFileManager(
                 compiler.getStandardFileManager(diagnostics, null, StandardCharsets.UTF_8))) {
 
-            JavaFileObject sourceFile = new StringJavaFileObject(CLASS_NAME, code);
+            JavaFileObject sourceFile = new StringJavaFileObject(primaryClassName, code);
 
             JavaCompiler.CompilationTask task = compiler.getTask(
                     null,
@@ -151,7 +152,7 @@ public class CodeRunner {
 
             // Load the compiled class
             InMemoryClassLoader classLoader = new InMemoryClassLoader(fileManager.getClassBytes());
-            Class<?> compiledClass = classLoader.loadClass(CLASS_NAME);
+            Class<?> compiledClass = classLoader.loadClass(primaryClassName);
 
             return new CompilationResult(true, compiledClass, null);
 
@@ -160,19 +161,22 @@ public class CodeRunner {
         }
     }
 
-    private String ensureClassName(String code) {
-        // Replace any public class declaration with Solution
-        Pattern pattern = Pattern.compile("public\\s+class\\s+(\\w+)");
-        Matcher matcher = pattern.matcher(code);
-
-        if (matcher.find()) {
-            String foundClass = matcher.group(1);
-            if (!foundClass.equals(CLASS_NAME)) {
-                code = code.replace("class " + foundClass, "class " + CLASS_NAME);
-            }
+    private String detectPrimaryClassName(String code) {
+        // Prefer public class for standard Java entrypoint structure.
+        Pattern publicClassPattern = Pattern.compile("public\\s+class\\s+(\\w+)");
+        Matcher publicClassMatcher = publicClassPattern.matcher(code);
+        if (publicClassMatcher.find()) {
+            return publicClassMatcher.group(1);
         }
 
-        return code;
+        // Fallback to first class declaration if no public class exists.
+        Pattern anyClassPattern = Pattern.compile("\\bclass\\s+(\\w+)");
+        Matcher anyClassMatcher = anyClassPattern.matcher(code);
+        if (anyClassMatcher.find()) {
+            return anyClassMatcher.group(1);
+        }
+
+        return CLASS_NAME;
     }
 
     private TestResult runSingleTest(Class<?> compiledClass, TestCase testCase) {
