@@ -200,30 +200,41 @@ public class MarkdownParser {
     /**
      * Extracts starter code from markdown content.
      * Expected format:
-     * 1. ### Starter Code followed by java code block
-     * 2. Text mentioning "preloaded answer box" followed by java code block
+     * 1. A "Starter Code" heading (## to ######)
+     * 2. Followed by a fenced code block (preferably java)
      */
     public String extractStarterCode(String markdown) {
         if (markdown == null)
             return null;
 
-        // Standard format: ### Starter Code
-        Pattern standardPattern = Pattern.compile(
-                "###\\s*Starter\\s*Code[:\\s]*```(?:java)?\\s*([^`]+)```",
-                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-
-        Matcher standardMatcher = standardPattern.matcher(markdown);
-        if (standardMatcher.find()) {
-            return standardMatcher.group(1).trim();
+        // Find a standard Starter Code section first.
+        Pattern sectionPattern = Pattern.compile(
+                "(?ims)^[ \\t]*#{2,6}[ \\t]*Starter[ \\t]*Code\\b[^\\n]*\\n([\\s\\S]*?)(?=^[ \\t]*#{1,6}[ \\t]+|\\z)");
+        Matcher sectionMatcher = sectionPattern.matcher(markdown);
+        if (!sectionMatcher.find()) {
+            return null;
         }
 
-        // Alternative format: "preloaded answer box" context
-        Pattern alternativePattern = Pattern.compile(
-                "(?:preloaded answer box|use as a template)[^`]*```(?:java)?\\s*([^`]+)```",
-                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-        Matcher alternativeMatcher = alternativePattern.matcher(markdown);
-        if (alternativeMatcher.find()) {
-            return alternativeMatcher.group(1).trim();
+        String sectionBody = sectionMatcher.group(1);
+
+        // Prefer Java fenced blocks inside the Starter Code section.
+        Pattern javaFencePattern = Pattern.compile("```java\\s*([\\s\\S]*?)```", Pattern.CASE_INSENSITIVE);
+        Matcher javaFenceMatcher = javaFencePattern.matcher(sectionBody);
+        if (javaFenceMatcher.find()) {
+            String code = javaFenceMatcher.group(1).trim();
+            if (!code.isEmpty()) {
+                return code;
+            }
+        }
+
+        // If language tag is omitted, accept the first fenced block in that section.
+        Pattern anyFencePattern = Pattern.compile("```[a-zA-Z0-9_+-]*\\s*([\\s\\S]*?)```", Pattern.CASE_INSENSITIVE);
+        Matcher anyFenceMatcher = anyFencePattern.matcher(sectionBody);
+        if (anyFenceMatcher.find()) {
+            String code = anyFenceMatcher.group(1).trim();
+            if (!code.isEmpty()) {
+                return code;
+            }
         }
 
         return null;

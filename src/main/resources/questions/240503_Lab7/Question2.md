@@ -21,6 +21,8 @@ Note that the driver class is provided in the preloaded answer box. Please do no
 |0| Default Box is Created <br> Capacity: 1.0 <br> Surface area: 6.0|
 |2<br>5 8 2<br>2.5 4.5 5|Capacity: 80.0<br>Surface area: 132.0<br>Capacity: 56.25<br>Surface area: 92.5|
 
+### Starter Code
+
 ```java
 import java.util.Scanner;
 public class BoxDriver {

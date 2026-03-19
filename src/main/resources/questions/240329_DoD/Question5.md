@@ -14,6 +14,8 @@ Light is also a concrete class that is a subclass of the Device class. It repres
 
 The driver class is provide in the preload answer box as well as some part of these classes. Do not change the preload answer as it might cause an error in your output.
 
+### Starter Code
+
 ```java
 import java.util.Scanner;
 import java.util.ArrayList;

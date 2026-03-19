@@ -12,6 +12,9 @@ Noted that the driver class is provided in the preloaded answer box. Please do n
 | **Expected** |
 |:--------- |
 |This line item does not exist.<br>This line item already exists.<br>----------- Invoice 1 Info -----------<br>Lays 5 20.0<br>KitKat 2 15.0<br>CocaCola 2 17.5<br>Total 165.0<br>----------- Invoice 2 Info -----------<br>UHT 3 8.0<br>Milo-Icecream 2 10.0<br>Nestle 2 7.5<br>Total 59.0|
+
+### Starter Code
+
 ```java
 public class Tester {
 

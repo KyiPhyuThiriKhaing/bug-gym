@@ -53,6 +53,9 @@ The Transaction class contains:
 |1 1 3 4 2 2 4 4<br>3<br>1 2 500<br>3 4 100<br>1 3 200|---KrungThai---<br>Account ID: 100002<br>Account Name: John Wick<br>Account Balance: 10400.0<br>Transaction ID: T05<br>Transaction Description: Central Online Shopping<br>Transaction Amount: 100.0<br>Transaction ID: T06<br>Transaction Description: Debitcard<br>Transaction Amount: 500.0<br>Account ID: 100004<br>Account Name: Bean Hilton<br>Account Balance: 7700.0<br>Transaction ID: T04<br>Transaction Description: Hotel De Lunar<br>Transaction Amount: 700.0<br>Transaction ID: T07<br>Transaction Description: Major Movie&Ceneplex<br>Transaction Amount: 1000.0<br>Transaction ID: T08<br>Transaction Description: Peach Beach Resort & Restaurant<br>Transaction Amount: 700.0<br>---Kasikorn---<br>Account ID: 100003<br>Account Name: Mary Pink<br>Account Balance: 7000.0<br>Transaction ID: T03<br>Transaction Description: Medical Treatment<br>Transaction Amount: 1000.0<br>Account ID: 100001<br>Account Name: Ann Doe<br>Account Balance: 3400.0<br>Transaction ID: T01<br>Transaction Description: Shopping at Siam Center<br>Transaction Amount: 100.0<br>Transaction ID: T02<br>Transaction Description: Creditcard<br>Transaction Amount: 500.0|
 
 A driver class BankSystemDriver is provide in the predefined answer box. DO NOT change anything in the driver class otherwise your result may be incorrect.
+
+### Starter Code
+
 ```java
 import java.util.Scanner;
 import java.util.HashMap;

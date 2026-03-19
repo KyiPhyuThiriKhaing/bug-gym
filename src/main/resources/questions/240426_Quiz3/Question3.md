@@ -25,6 +25,9 @@ Noted that the driver class is provided in the preloaded answer box. Do not chan
 |19.615 21 15|Volumn: 1471.125<br>Surface area: 855.0|
 |24 25 14|Volumn: 1568.0<br>Surface area: 896.0|
 |40 41 18|Volumn: 4320.0<br>Surface area: 1800.0|
+
+### Starter Code
+
 ```java
 import java.util.Scanner;
 
