@@ -14,3 +14,54 @@ If speed is , no update occurs. The `printInfo` method extends *Vehicle’s* `pr
 The **Bicycle** class is another concrete subclass of **Vehicle**, setting its type as "Bicycle" upon creation. Its `move` method updates the total distance unless the speed is , in which case no changes occur.
 
 The provided outline includes a structural guide. **Do not modify the VehicleTester class**, as changes may cause errors.
+
+### For example:
+
+| **Input** | **Result** |
+|:----------|:-----------|
+|Alice<br>101 Toyota Corolla White 20<br>Giant Escape Black<br>60 100<br>15 30|Owner: Alice<br>Type: Car Brand: Toyota Model: Corolla Color: White Total Distance: 100.0<br>Power Consumption: 5.0<br>Type: Bicycle Brand: Giant Model: Escape Color: Black Total Distance: 30.0|
+
+### Starter Code
+
+```java
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class VehicleTester {
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+
+		String ownerName = sc.next();
+
+		int carId = sc.nextInt();
+		String carBrand = sc.next();
+		String carModel = sc.next();
+		String carColor = sc.next();
+		double consumptionRate = sc.nextDouble();
+
+		String bicycleBrand = sc.next();
+		String bicycleModel = sc.next();
+		String bicycleColor = sc.next();
+
+		double carSpeed = sc.nextDouble();
+		double carDistance = sc.nextDouble();
+		double bicycleSpeed = sc.nextDouble();
+		double bicycleDistance = sc.nextDouble();
+
+		Owner owner = new Owner(ownerName);
+		Car car = new Car(carId, carBrand, carModel, carColor, consumptionRate);
+		Bicycle bicycle = new Bicycle(bicycleBrand, bicycleModel, bicycleColor);
+
+		owner.addVehicle(car);
+		owner.addVehicle(bicycle);
+
+		owner.move(car, carSpeed, carDistance);
+		owner.move(bicycle, bicycleSpeed, bicycleDistance);
+
+		System.out.println("Owner: " + owner.getName());
+		car.printInfo();
+		bicycle.printInfo();
+	}
+}
+
+```

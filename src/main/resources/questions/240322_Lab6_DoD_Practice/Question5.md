@@ -9,6 +9,10 @@ For the method listItem() of Library, it will list the title of all publications
 
 Noted that the driver class is provided in the preloaded answer box. Please do not modify the driver class.
 
+| **Input** | **Result** |
+|:----------|:-----------|
+||The item already exists.<br>The item does not exist.<br>The KMUTT Library has 6.<br>Harry Potter and the Sorcerer's Stone<br>The Lord of the Rings<br>nature<br>nature<br>Business Process Management Journal<br>Business Process Management Journal|
+
 ### Starter Code
 
 ```java

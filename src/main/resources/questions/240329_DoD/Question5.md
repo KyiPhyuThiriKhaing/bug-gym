@@ -14,6 +14,10 @@ Light is also a concrete class that is a subclass of the Device class. It repres
 
 The driver class is provide in the preload answer box as well as some part of these classes. Do not change the preload answer as it might cause an error in your output.
 
+| **Input** | **Result** |
+|:----------|:-----------|
+|1 Alice 1 11 FanA Red true 3 1 22 LightA true 0|Welcome Alice to your home: 1<br>Your total devices: 2<br>---------------------<br>Device id: 11<br>Device name: FanA<br>Device status:<br>This fan is Red<br>The current status is off.<br>The swing is on and level is 3<br>---------------------<br>Device id: 22<br>Device name: LightA<br>Device status:<br>This light is an auto light.|
+
 ### Starter Code
 
 ```java
@@ -65,7 +69,7 @@ class SmartHome {
         System.out.println("Your total devices: " + totalDevices);
         for (int i = 0; i < totalDevices; i++) {
             Device d = devices.get(i);
-            System.out.println("|---------------------|");
+            System.out.println("---------------------");
             System.out.println("Device id: " + d.getId());
             System.out.println("Device name: " + d.getDeviceName());
             System.out.println("Device status: ");
