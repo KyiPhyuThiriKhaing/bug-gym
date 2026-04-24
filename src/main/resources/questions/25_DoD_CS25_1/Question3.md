@@ -9,8 +9,8 @@ Write a program to swap elements in the given list of number such that odd numbe
 | --- | --- | --- | --- | --- | --- |
 | Odd | Odd | Even | Even | Odd | Even |
 
-* Odd numbers are: 
-* Even numbers are: 
+* Odd numbers are: 9 7 5 --(sort)--> 5 7 9
+* Even numbers are: 6 4 2 --(sort)--> 2 4 6
 
 **Put the numbers back to the odd and even position with the sorted order as follow:**
 
